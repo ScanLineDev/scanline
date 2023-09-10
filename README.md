@@ -1,6 +1,6 @@
 # AI Linter
 
-### Automatic AI-powered error-checking for your probably AI-generated code 
+### AI-generated error-checking for your AI-generated code 
 
 Anticipate issues with code before running it. 
 
