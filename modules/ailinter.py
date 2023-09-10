@@ -9,7 +9,7 @@ AILINTER_INSTRUCTIONS="""
     You are an expert python programmer and debugger. 
     Please read the following code file. 
     Please say if you anticipate any issues when running it. 
-    Look for subtle issues that may not be obvious at first glance. 
+    Look for subtle issues that may not be obvious at first glance.
     Look for internal consistency, and for external consistency with the rest of the codebase.
     Be alert! Look for any subtle human errors where the code doesn't do what the function or documentation hopes for it to do.
     Imagine running through every function in the code, look for 
@@ -53,12 +53,21 @@ def call_openai_api(code):
     openai.api_key = os.getenv("OPENAI_API_KEY")
 
     try:
-        response = openai.Completion.create(
-            engine="text-davinci-003",
-            prompt=payload['prompt'],
-            max_tokens = 1000,
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": AILINTER_INSTRUCTIONS},
+                {"role": "user", "content": f"{code}"}
+            ], 
             temperature = 0.1,
         )
+
+        # response = openai.Completion.create(
+        #     engine="text-davinci-003",
+        #     prompt=payload['prompt'],
+        #     max_tokens = 1000,
+        #     temperature = 0.1,
+        # )
         return response.choices[0].text.strip()
     except Exception as e:
         return f"An error occurred: {e}"
