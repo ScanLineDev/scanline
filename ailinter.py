@@ -14,39 +14,37 @@ def read_py_files(file_paths):
     return file_contents
 
 
-
 # Function to call OpenAI API to check if the code will run or has issues
 def call_openai_api(code):
     instructions = """
     You are an expert python programmer and debugger. 
     Please read the following code file. 
-    Please say if you anticipate any issues when running it.
-    If it looks OK, respond with the word 'Pass', and nothing else.
-    If not, then please respond with a description of the issues, 
-    plans for solving them, and updated suggested code.
+    Please say if you anticipate any issues when running it. Look for subtle issues that may not be obvious at first glance. Look for internal consistency, and for external consistency with the rest of the codebase.
+    
+    - If it looks OK, respond with the word "Pass", and nothing else.
+    - If not, then please respond with the word "Fail:", then a description of the issues, and options for solving it. 
     """
     payload = {
-        "prompt": instructions + "\n\n" + code,
-        "max_tokens": 500
+        "prompt": instructions + "\n\n\n ```" + code + "\n```",
     }
     
-    # Make the actual API call here
-    # Replace "your_openai_api_key_here" with your actual OpenAI API key
     openai.api_key = os.getenv("OPENAI_API_KEY")
 
     try:
         response = openai.Completion.create(
-            engine="text-davinci-002",
+            engine="text-davinci-003",
             prompt=payload['prompt'],
-            max_tokens=payload['max_tokens']
+            max_tokens = 1000,
+            temperature = 0.1,
         )
         return response.choices[0].text.strip()
     except Exception as e:
         return f"An error occurred: {e}"
 
-if __name__ == "__main__":
 
-    # get all .py file in this directory 
+if __name__ == "__main__":
+    
+    # Get all .py files in this directory
     file_paths = []
     for file in os.listdir():
         if file.endswith(".py"):
@@ -61,4 +59,9 @@ if __name__ == "__main__":
         # Make an API call to OpenAI to check if the code will run
         openai_response = call_openai_api(content)
         
-        print(f"Code review: {openai_response}")
+        print(f"Code Review: {openai_response}")
+        
+        # # If the OpenAI response is not "Pass", rewrite the .py file with the OpenAI response
+        # if openai_response.strip() != "Pass" and file_path != "ailinter.py":
+        #     with open(file_path, 'w') as f:
+        #         f.write(openai_response)
