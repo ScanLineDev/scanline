@@ -7,3 +7,9 @@
 - Find subtle issues that may not be obvious at first glance. 
 
 - Check for internal consistency, and for external consistency with the rest of the codebase.
+
+
+### Future work 
+
+- Retrieve the documentation for all imported libraries
+- Trace function calls throughout the codebase
