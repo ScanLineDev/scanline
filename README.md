@@ -8,6 +8,20 @@
 
 - Check for internal consistency, and for external consistency with the rest of the codebase.
 
+## Usage 
+
+```py
+from modules import ailinter 
+
+def main():
+    print ("Your program here...")
+
+if __name__ == "__main__":   
+    ailinter.run()          # --> run AILinter 
+    main()
+
+```
+
 
 ### Future work 
 
