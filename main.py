@@ -1,5 +1,5 @@
 
-from modules import ailinter 
+from ailinter import ailinter 
 
 
 def main():
