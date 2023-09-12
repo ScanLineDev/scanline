@@ -1,4 +1,4 @@
-# Our Style Guide 
+# SuperCo Style Guide 
 ### PEP Compliance
 PEP 8: Follow the PEP 8 style guide for Python code.
 PEP 20: Follow the Zen of Python (PEP 20) for general programming philosophy.
