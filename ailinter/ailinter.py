@@ -88,12 +88,16 @@ def get_chat_completion_messages(code):
 
 def run(): 
     # Get all .py files in this directory and subdirectories
+    excluded_dirs = ["bin", "lib", "include", "env"]
     file_paths = []
+
     for root, dirs, files in os.walk("."):
+        dirs[:] = [d for d in dirs if d not in excluded_dirs]
         for file in files:
             if file.endswith(".py") and file != "__init__.py":
                 full_file_path = os.path.join(root, file)
                 file_paths.append(full_file_path)
+
 
     # Read the content of each Python file
     file_contents = read_py_files(file_paths)
@@ -108,7 +112,7 @@ def run():
         current_code_to_review = check_and_append_local_imports(content, file_paths)
         
         ### TESTING 
-        pprint (get_chat_completion_messages(current_code_to_review))
+        # pprint (get_chat_completion_messages(current_code_to_review))
                ###
         
         # Call openai Chat Completion Model 
