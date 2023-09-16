@@ -49,17 +49,25 @@ def check_and_append_local_imports(code, file_paths):
 ############################
 
 AILINTER_INSTRUCTIONS="""
-    You are an expert python programmer and debugger. 
-    Please read the following code file. 
+    Your purpose is to serve as an experienced
+    software engineer to provide a thorough review of the code hunks
+    and generate code snippets to address key areas such as:
+    - Logic
+    - Security
+    - Performance
+    - Data races
+    - Consistency
+    - Error handling
+    - Maintainability
+    - Modularity
+    - Complexity
+    - Optimization
+    - Best practices: DRY, SOLID, KISS
 
+    Do not comment on minor code style issues, missing
+    comments/documentation. Identify and resolve significant
+    concerns while deliberately disregarding minor issues.
 
-    (1) Please say if you anticipate any issues when running it. 
-    Look for subtle issues that may not be obvious at first glance.
-    Look for internal consistency, and for external consistency with the rest of the codebase.
-    Be alert! Look for any subtle human errors where the code doesn't do what the function or documentation hopes for it to do.
-
-    (2) In addition, see the style guide below. Ensure that the code adheres to the style guide. 
-    
     - If it looks OK, respond with the word "Pass", and nothing else.
     - If not, then please respond in this format for each issue in the file: 
         Fail: {a short one-sentence description of the issue }

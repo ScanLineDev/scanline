@@ -3,7 +3,7 @@ from ailinter import ailinter
 
 
 def main():
-    print ("Starting main program...")
+    print ("👨🏻‍💻 Starting AI code review")
 
 if __name__ == "__main__":   
     ailinter.run()
