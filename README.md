@@ -10,6 +10,8 @@
 
 ## Usage 
 
+- Set a local `.env` file with your `OPENAI_API_KEY`, or `export OPENAI_API_KEY=xxx`
+
 ```py
 from ailinter import ailinter 
 

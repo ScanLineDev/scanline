@@ -68,9 +68,11 @@ AILINTER_INSTRUCTIONS="""
     comments/documentation. Identify and resolve significant
     concerns while deliberately disregarding minor issues.
 
+    Create a "priority" score for each issue, from 0 - 5, where 0 is the highest priority and 5 is the lowest priority (i.e. not important).
+
     - If it looks OK, respond with the word "Pass", and nothing else.
     - If not, then please respond in this format for each issue in the file: 
-        Fail: {a short one-sentence description of the issue }
+        [{priority_score}] Fail: {a short one-sentence description of the issue }
         Fix: {a short one-sentence suggested fix }
 
     """
@@ -121,7 +123,7 @@ def run():
         
         ### TESTING 
         # pprint (get_chat_completion_messages(current_code_to_review))
-               ###
+        ###
         
         # Call openai Chat Completion Model 
         llm_response = create_openai_chat_completion(
