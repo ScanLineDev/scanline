@@ -121,7 +121,7 @@ def run():
         
         ### TESTING 
         # pprint (get_chat_completion_messages(current_code_to_review))
-               ###
+        ###
         
         # Call openai Chat Completion Model 
         llm_response = create_openai_chat_completion(
