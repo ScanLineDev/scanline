@@ -94,8 +94,25 @@ def get_chat_completion_messages(code):
 ## LLM call and Prompt 
 ############################
 
+def get_files_changed():
+    # Get list of all files that changed on this git branch compared to main
+    file_paths_changed = os.popen("git diff --name-only main").read().split("\n")
+
+    # add . prefix to all files
+    result = []
+    for file_path in file_paths_changed:
+        if file_path != "":
+            result.append("./" + file_path)
+
+    return result
+
+def get_file_diffs(file_paths):
+    file_diffs = {}
+    for file_path in file_paths:
+        file_diffs[file_path] = os.popen(f"git diff --unified=0 {file_path}").read()
+    return file_diffs
+
 def run(): 
-    # Get all .py files in this directory and subdirectories
     excluded_dirs = ["bin", "lib", "include", "env"]
     file_paths = []
 
@@ -107,10 +124,12 @@ def run():
                 file_paths.append(full_file_path)
 
 
-    # Read the content of each Python file
-    file_contents = read_py_files(file_paths)
+    # Get all .py files in this directory and subdirectories that changed on this git branch compared to master
+    file_paths_changed = get_files_changed()
+    diffs = get_file_diffs(file_paths_changed)
     
-    for file_path, content in file_contents.items():
+    for file_path in file_paths_changed:
+        content = diffs[file_path]
         print(f"\n== Checking {file_path} ==")
 
         if content == "" or content == None:
@@ -143,6 +162,3 @@ def run():
         #     with open(file_path, 'w') as f:
         #         f.write(llm_response)
     print ("\n\n=== Done. ===\nSee above for code review. \nNow running the rest of your code...\n")
-
-if __name__ == "__main__":
-    run()
