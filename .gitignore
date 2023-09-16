@@ -3,4 +3,6 @@ ailinter/__pycache__
 bin
 lib
 include
-pyenv.cfg
+pyvenv.cfg
+*.pyc
+__pycache__
