@@ -251,8 +251,8 @@ def run(scope="branch"):
 
 
     # Get all .py files in this directory and subdirectories that changed on this git branch compared to master
-    file_paths_changed = get_files_changed()
-    diffs = get_file_diffs(file_paths_changed)
+    # file_paths_changed = get_files_changed()
+    # diffs = get_file_diffs(file_paths_changed)
 
     feedback_list = [] 
     attention_files_list = [] # files that need attention, i.e. not "Pass"
@@ -271,8 +271,8 @@ def run(scope="branch"):
             file_paths_changed.append(file_path)
             diffs[file_path] = diff
         
-    print(f"Files changed: {file_paths_changed}")
-    print(f"File diffs: {diffs}")
+    # print(f"Files changed: {file_paths_changed}")
+    # print(f"File diffs: {diffs}")
     
     for file_path in file_paths_changed:
         content = diffs[file_path]
@@ -303,12 +303,10 @@ def run(scope="branch"):
         # ) 
         
         # print(f"Code Review: \n{llm_response}")
-
-
         
         ### --- Future feature --- 
         ## If the OpenAI response is not "Pass", rewrite the .py file with the OpenAI response
-        if llm_response.strip() != "Pass" and file_path != "ailinter.py":
+        if llm_response.strip() != "Pass":
             attention_files_list.append(file_path)
         else: 
             okay_file_list.append(file_path)
