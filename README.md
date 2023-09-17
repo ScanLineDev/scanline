@@ -10,6 +10,8 @@
 
 ## Usage 
 
+- Set a local `.env` file with your `OPENAI_API_KEY`, or `export OPENAI_API_KEY=xxx`
+
 ```py
 from ailinter import ailinter 
 
@@ -21,6 +23,12 @@ if __name__ == "__main__":
     main()
 ```
 
+# Build
+pip3 install -e .
+
+# Run
+reviewme --help to see available commands!
+
 ## Update rule style guide 
 - Add rule templates to /rule_templates. This text will be included in the prompt to the LLM, so the LLM can evaluate the code according to the style guide you write. 
 
@@ -30,3 +38,5 @@ Update the default rule template and LLM settings in `config.yaml`
 ### Future work 
 - Retrieve the documentation for all imported libraries
 - Trace function calls throughout the codebase
+
+
