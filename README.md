@@ -12,15 +12,13 @@
 
 - Set a local `.env` file with your `OPENAI_API_KEY`, or `export OPENAI_API_KEY=xxx`
 
-```py
-from ailinter import ailinter 
+```bash
+# one line automated code review 
+reviewme run 
 
-def main():
-    print ("Your program here...")
+# optional: set the scope 
+reviewme run --scope <commit, branch, repo>
 
-if __name__ == "__main__":   
-    ailinter.run()          # --> run AILinter 
-    main()
 ```
 
 # Build
