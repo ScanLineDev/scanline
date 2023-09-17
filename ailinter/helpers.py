@@ -30,7 +30,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 #######
 
 def create_openai_chat_completion (messages, 
-                                   model = "gpt-4",
+                                   model = "gpt-3.5-turbo-16k",
                                    temperature = config['DEFAULT_TEMPERATURE']): 
   
   try: 
@@ -43,6 +43,16 @@ def create_openai_chat_completion (messages,
   except Exception as e:
       print(f"An error occurred: {e}")
   
+def create_simple_openai_chat_completion(
+      system_message, user_message):
+  return create_openai_chat_completion(
+      messages=[
+          {"role": "system",
+              "content": system_message,},
+          {"role": "user","content": user_message,},
+      ],
+  )
+
 
 #######
 ## OpenAI: Completion
