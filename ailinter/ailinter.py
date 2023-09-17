@@ -11,8 +11,11 @@ load_dotenv()
 
 # load the local rule guide .md
 def load_rule_guide(config): 
+    dir_path = os.path.dirname(os.path.realpath(__file__))
     rule_guide = config['RULE_GUIDE']
-    with open(f"ailinter/rule_templates/{rule_guide}", 'r') as f:
+    rule_guide_path = os.path.join(dir_path, f'rule_templates/{rule_guide}')
+    
+    with open(rule_guide_path, 'r') as f:
         return f.read()
 
 config = load_config()
@@ -73,8 +76,7 @@ FEEDBACK_ITEM_FORMAT_TEMPLATE = """
     """
 
 AILINTER_INSTRUCTIONS=f"""
-    Your purpose is to serve as an experienced
-    software engineer to provide a thorough review git diffs of tecode
+    Your purpose is to serve as an experienced software engineer to provide a thorough review git diffs of the code
     and generate code snippets to address key ERROR CATEGORIES such as:
 
     {LIST_OF_ERROR_CATEGORIES}
@@ -92,6 +94,7 @@ AILINTER_INSTRUCTIONS=f"""
     - If it looks OK, respond with the word "Pass", and nothing else.
     - If not, then please respond in this format for each issue in the file: 
         {FEEDBACK_ITEM_FORMAT_TEMPLATE}
+
     """
 
 #########
@@ -113,9 +116,9 @@ def get_chat_completion_messages_for_review(code):
 ## LLM call and Prompt 
 ############################
 
-def get_files_changed():
+def get_files_changed(target):
     # Get list of all files that changed on this git branch compared to main
-    file_paths_changed = os.popen("git diff --name-only main").read().split("\n")
+    file_paths_changed = os.popen("git diff --name-only {0}".format(target)).read().split("\n")
 
     # add . prefix to all files
     result = []
@@ -125,10 +128,13 @@ def get_files_changed():
 
     return result
 
-def get_file_diffs(file_paths):
+def get_file_diffs(file_paths, target):
+
     file_diffs = {}
     for file_path in file_paths:
-        file_diffs[file_path] = os.popen(f"git diff --unified=0 main {file_path}").read()
+            file_diffs[file_path] = os.popen("git diff --unified=0 {0} {1}".format(target, file_path)).read()
+            print("git diff --unified=0 {0} {1}".format(target, file_path))
+    print(file_diffs)
     return file_diffs
 
 ############################
@@ -231,7 +237,8 @@ def get_final_organized_feedback_from_llm(feedback_list):
 ############################
 
 
-def run(): 
+def run(scope="branch"): 
+    # Get all .py files in this directory and subdirectories
     excluded_dirs = ["bin", "lib", "include", "env"]
     file_paths = []
 
@@ -250,6 +257,22 @@ def run():
     feedback_list = [] 
     attention_files_list = [] # files that need attention, i.e. not "Pass"
     okay_file_list = [] # files that are "Pass"
+    if scope == "commit":
+        file_paths_changed = get_files_changed("HEAD~0")
+        diffs = get_file_diffs(file_paths_changed, "HEAD~0")
+    elif scope == "branch":
+        file_paths_changed = get_files_changed("reviewme")
+        diffs = get_file_diffs(file_paths_changed, "reviewme")
+    elif scope == "repo":
+        file_paths_changed = []
+        diffs = {}
+        file_contents = read_py_files(file_paths)
+        for file_path, diff in file_contents.items():
+            file_paths_changed.append(file_path)
+            diffs[file_path] = diff
+        
+    print(f"Files changed: {file_paths_changed}")
+    print(f"File diffs: {diffs}")
     
     for file_path in file_paths_changed:
         content = diffs[file_path]
@@ -263,7 +286,7 @@ def run():
         
         ### TESTING 
         # pprint (get_chat_completion_messages(current_code_to_review))
-        ###
+               ###
         
         # Call openai Chat Completion Model 
         llm_response = create_openai_chat_completion(
@@ -304,3 +327,10 @@ def run():
     print ("\n✅".join(okay_file_list))
     
     print ("\n\n=== Done. ===\nSee above for code review. \nNow running the rest of your code...\n")
+        # if llm_response.strip() != "Pass" and file_path != "ailinter.py":
+        #     with open(file_path, 'w') as f:
+        #         f.write(llm_response)
+    print ("\n\n=== Done. ===\nSee above for code review. \nNow running the rest of your code...\n")
+
+if __name__ == "__main__":
+    run()

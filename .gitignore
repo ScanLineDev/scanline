@@ -6,3 +6,4 @@ include
 pyvenv.cfg
 *.pyc
 __pycache__
+reviewme.egg-info/

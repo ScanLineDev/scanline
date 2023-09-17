@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 from pprint import pprint 
 
 import openai
-from anthropic import Anthropic, HUMAN_PROMPT, AI_PROMPT
 
 ################################
 ## Misc Helpers  
@@ -12,7 +11,9 @@ from anthropic import Anthropic, HUMAN_PROMPT, AI_PROMPT
 
 # load the local config.yaml 
 def load_config():
-    with open('ailinter/config.yaml', 'r') as f:
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    config_path = os.path.join(dir_path, 'config.yaml')
+    with open(config_path, 'r') as f:
         return yaml.safe_load(f)
 
 config = load_config()
