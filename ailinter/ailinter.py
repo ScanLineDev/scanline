@@ -96,9 +96,9 @@ def get_chat_completion_messages(code):
 ## LLM call and Prompt 
 ############################
 
-def get_files_changed():
+def get_files_changed(target):
     # Get list of all files that changed on this git branch compared to main
-    file_paths_changed = os.popen("git diff --name-only main").read().split("\n")
+    file_paths_changed = os.popen("git diff --name-only {0}".format(target)).read().split("\n")
 
     # add . prefix to all files
     result = []
@@ -108,13 +108,16 @@ def get_files_changed():
 
     return result
 
-def get_file_diffs(file_paths):
+def get_file_diffs(file_paths, target):
+
     file_diffs = {}
     for file_path in file_paths:
-        file_diffs[file_path] = os.popen(f"git diff --unified=0 main {file_path}").read()
+            file_diffs[file_path] = os.popen("git diff --unified=0 {0} {1}".format(target, file_path)).read()
+            print("git diff --unified=0 {0} {1}".format(target, file_path))
+    print(file_diffs)
     return file_diffs
 
-def run(): 
+def run(scope="branch"): 
     excluded_dirs = ["bin", "lib", "include", "env"]
     file_paths = []
 
@@ -125,10 +128,22 @@ def run():
                 full_file_path = os.path.join(root, file)
                 file_paths.append(full_file_path)
 
-
-    # Get all .py files in this directory and subdirectories that changed on this git branch compared to master
-    file_paths_changed = get_files_changed()
-    diffs = get_file_diffs(file_paths_changed)
+    if scope == "commit":
+        file_paths_changed = get_files_changed("HEAD~0")
+        diffs = get_file_diffs(file_paths_changed, "HEAD~0")
+    elif scope == "branch":
+        file_paths_changed = get_files_changed("reviewme")
+        diffs = get_file_diffs(file_paths_changed, "reviewme")
+    elif scope == "repo":
+        file_paths_changed = []
+        diffs = {}
+        file_contents = read_py_files(file_paths)
+        for file_path, diff in file_contents.items():
+            file_paths_changed.append(file_path)
+            diffs[file_path] = diff
+        
+    print(f"Files changed: {file_paths_changed}")
+    print(f"File diffs: {diffs}")
     
     for file_path in file_paths_changed:
         content = diffs[file_path]
