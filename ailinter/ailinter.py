@@ -50,7 +50,7 @@ def check_and_append_local_imports(code, file_paths):
 
 AILINTER_INSTRUCTIONS="""
     Your purpose is to serve as an experienced
-    software engineer to provide a thorough review of the code hunks
+    software engineer to provide a thorough review git diffs of tecode
     and generate code snippets to address key areas such as:
     - Logic
     - Security
@@ -109,7 +109,7 @@ def get_files_changed():
 def get_file_diffs(file_paths):
     file_diffs = {}
     for file_path in file_paths:
-        file_diffs[file_path] = os.popen(f"git diff --unified=0 {file_path}").read()
+        file_diffs[file_path] = os.popen(f"git diff --unified=0 main {file_path}").read()
     return file_diffs
 
 def run(): 
