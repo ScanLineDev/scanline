@@ -23,6 +23,12 @@ if __name__ == "__main__":
     main()
 ```
 
+# Build
+pip3 install -e .
+
+# Run
+reviewme --help to see available commands!
+
 ## Update rule style guide 
 - Add rule templates to /rule_templates. This text will be included in the prompt to the LLM, so the LLM can evaluate the code according to the style guide you write. 
 
