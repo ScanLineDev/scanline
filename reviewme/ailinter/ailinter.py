@@ -148,16 +148,20 @@ def get_system_prompt_for_final_summary():
 
     format_feedback_list_prompt = f"""You are an expert programmer doing a code review. You will receive a list of feedback segments for each file. Your job is to 
     - review the feedback items
-    - cluster all of them by ERROR CATEGORY 
+    - cluster all of the feedback items by ERROR CATEGORY 
     - Within each category, rank-order them by PRIORITY_SCORE, with 0 the highest, then 1, 2, 3, 4, and finally 5
     - Return the formatted list of feeedback items. 
+    - Make sure there are at most 3 items per each feedback category
+    - Do not mention the same feedabck item in multiple categories, just put it in at most 1 category
+    - If you see dupicate feedback items, aggregate them into a single feedback item
+    - Mention the exact line number of the issue in the feedback item if possible
 
     Concretely, each feedback item is formatted like this: 
     ---
     {FEEDBACK_ITEM_FORMAT_TEMPLATE}
     ---
 
-    The ERROR CATEGORIES are:
+    The FEEDBACK CATEGORIES are:
     ---
     {LIST_OF_ERROR_CATEGORIES}
     ---
@@ -170,13 +174,13 @@ def get_system_prompt_for_final_summary():
 
     --🔴 High 🔴---
 
-    * script.py:  my_function 
+    * script.py:281 some_function 
     - Fail: <the description of issue>
     - Fix: <the suggested fix> 
 
     --🟠 Medium 🟠---
 
-    * otherscript.lpy:  lol_function 
+    * otherscript.py:14  some_function 
     - Fail: <the description of issue>
     - Fix: <the suggested fix> 
 
@@ -184,13 +188,13 @@ def get_system_prompt_for_final_summary():
     ========= CONSISTENCY ISSUES =========
     --🟠 Medium 🟠---
 
-    * script.py:  my_function
+    * script.py:420  my_function
     - Fail: <the description of issue>
     - Fix: <the suggested fix> 
 
     --🟡 Low 🟡---
 
-    * otherscript.lpy:  lol_function
+    * otherscript.py:69  some_function
     - Fail: <the description of issue>
     - Fix: <the suggested fix> 
 
@@ -240,7 +244,7 @@ def get_final_organized_feedback_from_llm(feedback_list):
 ############################
 
 
-def run(scope="branch"): 
+def run(scope, onlyReviewThisFile): 
     # Get all .py files in this directory and subdirectories
     excluded_dirs = ["bin", "lib", "include", "env"]
     file_paths = []
@@ -278,6 +282,11 @@ def run(scope="branch"):
     # print(f"File diffs: {diffs}")
     
     for file_path in file_paths_changed:
+        # check that onlyThisFile is in the file path or else skip 
+        if onlyReviewThisFile != "" and onlyReviewThisFile not in file_path:
+            logging.debug(f"Skipping {file_path} because it does not match onlyReviewThisFile {onlyReviewThisFile}")
+            continue
+
         content = diffs[file_path]
         print(f"\n== Checking {file_path} ==")
 
@@ -301,6 +310,7 @@ def run(scope="branch"):
 
 
         feedback_list.append(llm_response)
+
 
         ### Call a normal Completion Model 
         # llm_response = create_anthropic_completion(
