@@ -72,6 +72,22 @@ LIST_OF_ERROR_CATEGORIES = """
     - 👀 Observability: Logging and monitoring
 """
 
+LIST_OF_PRIORITY_GUIDELINES = """High Priority:
+Issues that pose immediate security risks, cause data loss, or critically break functionality.
+Problems that have a direct and substantial impact on business revenue.
+Must-have features or issues that are absolutely essential for a release.
+
+Medium Priority:
+Performance issues that degrade user experience but don't cripple the system.
+Important but non-critical features, and moderate user-experience concerns.
+Issues impacting internal tools and operations but not directly affecting customers.
+
+Low Priority:
+Nice-to-have features and minor UI/UX issues that don't affect core functionality.
+Tech debt items that are important long-term but not urgent.
+Issues identified as non-essential for the current release cycle or having low overall impact.
+"""
+
 FEEDBACK_ITEM_FORMAT_TEMPLATE = """
     ** <FILEPATH>:<FUNCTION_NAME>:<LINE_NUMBER> <ERROR CATEGORY> ** 
     [<PRIORITY_SCORE>] Fail: <a short one-sentence description of the issue >
@@ -88,8 +104,10 @@ AILINTER_INSTRUCTIONS=f"""
     comments/documentation. Identify and resolve significant
     concerns while deliberately disregarding minor issues.
 
-    - Create a "PRIORITY" for each issue, with values of: "🔴 High "Priority 🔴", "🟠 Medium Priority 🟠", or "🟡 Low Priority 🟡" 
+    - Create a "PRIORITY" for each issue, with values of: "🔴 High "Priority 🔴", "🟠 Medium Priority 🟠", or "🟡 Low Priority 🟡". Assign the priority score according to these guidelines: 
+    {LIST_OF_PRIORITY_GUIDELINES}
 
+    Then: 
     - Assign it an ERROR CATEGORY from the list above.
 
     - Notice the FUNCTION_NAME 
