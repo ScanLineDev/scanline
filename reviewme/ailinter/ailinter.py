@@ -243,6 +243,15 @@ def get_final_organized_feedback_from_llm(feedback_list):
 ## Main 
 ############################
 
+def review_code(code):
+    llm_response = create_openai_chat_completion(
+        messages = get_chat_completion_messages_for_review(code), 
+        model = "gpt-4",
+    ) 
+
+    return llm_response
+
+ 
 
 def run(scope, onlyReviewThisFile): 
     # Get all .py files in this directory and subdirectories
@@ -278,54 +287,44 @@ def run(scope, onlyReviewThisFile):
             file_paths_changed.append(file_path)
             diffs[file_path] = diff
         
-    # print(f"Files changed: {file_paths_changed}")
-    # print(f"File diffs: {diffs}")
-    
-    for file_path in file_paths_changed:
-        # check that onlyThisFile is in the file path or else skip 
-        if onlyReviewThisFile != "" and onlyReviewThisFile not in file_path:
-            logging.debug(f"Skipping {file_path} because it does not match onlyReviewThisFile {onlyReviewThisFile}")
-            continue
+    # Define the maximum concurrency
+    from concurrent.futures import ThreadPoolExecutor
+    MAX_CONCURRENCY = 10
 
-        content = diffs[file_path]
-        print(f"\n== Checking {file_path} ==")
+    # Create a ThreadPoolExecutor with the maximum concurrency
+    with ThreadPoolExecutor(max_workers=MAX_CONCURRENCY) as executor:
+        # Submit the file review completion jobs to the executor
+        futures = []
+        for file_path in file_paths_changed:
+            if onlyReviewThisFile != "" and onlyReviewThisFile not in file_path:
+                continue
 
-        if content == "" or content == None:
-            continue
+                # check that onlyThisFile is in the file path or else skip 
+            if onlyReviewThisFile != "" and onlyReviewThisFile not in file_path:
+                logging.debug(f"Skipping {file_path} because it does not match onlyReviewThisFile {onlyReviewThisFile}")
+                continue
 
-        # Append imported local modules' code to the existing code
-        current_code_to_review = check_and_append_local_imports(content, file_paths)
-        
-        
-        ### TESTING 
-        # Call openai Chat Completion Model 
-        logging.debug("Size of content in {0} to review =  {1} chars".format(file_path, len(current_code_to_review)))
-        llm_response = create_openai_chat_completion(
-            messages = get_chat_completion_messages_for_review(current_code_to_review), 
-            model = "gpt-4",
-        ) 
+            content = diffs[file_path]
+            print(f"\n== Checking {file_path} ==")
 
-        if llm_response is None:
-            continue
+            if content == "" or content == None:
+                continue
 
-
-        feedback_list.append(llm_response)
-
-
-        ### Call a normal Completion Model 
-        # llm_response = create_anthropic_completion(
-        #     prompt = get_completion_prompt(current_code_to_review)
-        # ) 
-        
-        # print(f"Code Review: \n{llm_response}")
-        
-        ### --- Future feature --- 
-        ## If the OpenAI response is not "Pass", rewrite the .py file with the OpenAI response
-        if llm_response.strip() != "Pass":
-            attention_files_list.append(file_path)
+            # Append imported local modules' code to the existing code
+            current_code_to_review = check_and_append_local_imports(content, file_paths)
             
-        else: 
-            okay_file_list.append(file_path)
+            import time
+            time.sleep(0.25)
+            futures.append(executor.submit(review_code, current_code_to_review))
+
+        # Wait for all the jobs to complete
+        for future in futures:
+            llm_response = future.result()
+
+            if llm_response is None:
+                continue
+
+            feedback_list.append(llm_response)
 
     # print ("\n\n=== 📝 Feedback List ===\n")
     # pprint (feedback_list)
