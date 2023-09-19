@@ -73,7 +73,7 @@ LIST_OF_ERROR_CATEGORIES = """
 """
 
 FEEDBACK_ITEM_FORMAT_TEMPLATE = """
-    ** <FILEPATH>:<FUNCTION_NAME>:<ERROR CATEGORY> ** 
+    ** <FILEPATH>:<FUNCTION_NAME>:<LINE_NUMBER> <ERROR CATEGORY> ** 
     [<PRIORITY_SCORE>] Fail: <a short one-sentence description of the issue >
     Fix: <a short one-sentence suggested fix >
     """
@@ -152,8 +152,8 @@ def get_system_prompt_for_final_summary():
     - Within each category, rank-order them by PRIORITY_SCORE, with 0 the highest, then 1, 2, 3, 4, and finally 5
     - Return the formatted list of feeedback items. 
     - Make sure there are at most 3 items per each feedback category
-    - Do not mention the same feedabck item in multiple categories, just put it in at most 1 category
-    - If you see dupicate feedback items, aggregate them into a single feedback item
+    - Do not mention the same feedback item in multiple categories, just put it in at most 1 category
+    - If you see duplicate feedback items within a file, aggregate them into a single feedback item with a list of the lines it occurs
     - Mention the exact line number of the issue in the feedback item if possible
 
     Concretely, each feedback item is formatted like this: 
