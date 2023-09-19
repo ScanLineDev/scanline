@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 from .ailinter import ailinter 
 import click
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 @click.group()
 def cli():

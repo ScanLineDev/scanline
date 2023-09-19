@@ -2,6 +2,9 @@ import os
 from dotenv import load_dotenv
 from .helpers import create_openai_completion, create_openai_chat_completion, create_simple_openai_chat_completion, create_anthropic_completion, load_config
 from pprint import pprint 
+import logging 
+logging.getLogger(__name__)
+
 load_dotenv()
 
 
@@ -284,11 +287,10 @@ def run(scope="branch"):
         # Append imported local modules' code to the existing code
         current_code_to_review = check_and_append_local_imports(content, file_paths)
         
-        ### TESTING 
-        # pprint (get_chat_completion_messages(current_code_to_review))
-               ###
         
+        ### TESTING 
         # Call openai Chat Completion Model 
+        logging.debug("Size of content in {0} to review =  {1} chars".format(file_path, len(current_code_to_review)))
         llm_response = create_openai_chat_completion(
             messages = get_chat_completion_messages_for_review(current_code_to_review), 
             model = "gpt-4",
