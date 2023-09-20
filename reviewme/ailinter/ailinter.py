@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from .helpers import create_openai_completion, create_openai_chat_completion, create_simple_openai_chat_completion, create_anthropic_completion, load_config
+from reviewme.ailinter.helpers import create_openai_chat_completion, create_simple_openai_chat_completion, load_config
 from pprint import pprint 
 import logging 
 logging.getLogger(__name__)

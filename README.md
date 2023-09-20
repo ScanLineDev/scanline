@@ -20,6 +20,8 @@ reviewme run
 reviewme run --scope <commit, branch, repo>
 
 ```
+# New Build Process for global install 
+pyinstaller --onefile reviewme/ailinter/ailinter.py
 
 # Build
 pip3 install -e .
