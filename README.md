@@ -20,11 +20,17 @@ reviewme run
 reviewme run --scope <commit, branch, repo>
 
 ```
-# New Build Process for global install 
-pyinstaller --onefile reviewme/ailinter/ailinter.py
+# Build and Install 
+1. Generate a build with the `pyinstaller` package:
 
-# Build
-pip3 install -e .
+`pyinstaller --onefile reviewme/ailinter/ailinter.py`
+
+2. Make sure this generates a file called "build" is in the root directory. 
+
+3. Users can install with curl with the command:
+`curl -sSL https://raw.githubusercontent.com/stephenkfrey/ailinter/reviewme/install.sh | sudo bash`
+# Build with Pip (for testing)
+`pip3 install -e .`
 
 # Run
 reviewme --help to see available commands!
