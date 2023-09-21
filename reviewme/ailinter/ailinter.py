@@ -300,8 +300,16 @@ def run(scope, onlyReviewThisFile):
         file_paths_changed = get_files_changed("HEAD~0")
         diffs = get_file_diffs(file_paths_changed, "HEAD~0")
     elif scope == "branch":
-        file_paths_changed = get_files_changed("main")
-        diffs = get_file_diffs(file_paths_changed, "main")
+        try:
+            file_paths_changed = get_files_changed("master")
+            diffs = get_file_diffs(file_paths_changed, "master")
+        except Exception as e:
+            pass
+        try:
+            file_paths_changed = get_files_changed("main")
+            diffs = get_file_diffs(file_paths_changed, "main")
+        except Exception as e:
+            pass
     elif scope == "repo":
         file_paths_changed = []
         diffs = {}
