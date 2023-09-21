@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from reviewme.ailinter.helpers import create_openai_chat_completion, create_simple_openai_chat_completion, load_config
+from .helpers import create_openai_chat_completion, create_simple_openai_chat_completion, load_config
 from pprint import pprint 
 import logging 
 logging.getLogger(__name__)
@@ -364,4 +364,4 @@ def run(scope, onlyReviewThisFile):
     print ("\n\n=== Done. ===\nSee above for code review. \nNow running the rest of your code...\n")
 
 if __name__ == "__main__":
-    run()
+    run("commit", "")
