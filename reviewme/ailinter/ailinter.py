@@ -1,4 +1,4 @@
-import os
+import os, sys
 from dotenv import load_dotenv
 from reviewme.ailinter.helpers import create_openai_chat_completion, create_simple_openai_chat_completion, load_config
 from pprint import pprint 
@@ -13,11 +13,12 @@ load_dotenv()
 ############################
 
 # load the local rule guide .md
-def load_rule_guide(config): 
-    dir_path = os.path.dirname(os.path.realpath(__file__))
+
+def load_rule_guide(config):
+    dir_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
     rule_guide = config['RULE_GUIDE']
-    rule_guide_path = os.path.join(dir_path, f'rule_templates/{rule_guide}')
-    
+    rule_guide_path = os.path.join(dir_path, f'reviewme/ailinter/rule_templates/{rule_guide}')
+
     with open(rule_guide_path, 'r') as f:
         return f.read()
 

@@ -23,9 +23,9 @@ reviewme run --scope <commit, branch, repo>
 # Build and Install 
 1. Generate a build with the `pyinstaller` package:
 
-`pyinstaller --onefile reviewme/ailinter/ailinter.py`
+`pyinstaller aicli-build.spec`
 
-2. Make sure this generates a file called "build" is in the root directory. 
+2. This will generate a build in `dist/ailinter-build`.
 
 3. Users can install with curl with the command:
 `curl -sSL https://raw.githubusercontent.com/stephenkfrey/ailinter/reviewme/install.sh | sudo bash`

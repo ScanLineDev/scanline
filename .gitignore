@@ -3,10 +3,8 @@ ailinter/__pycache__
 bin
 lib
 build
-dist
 *.egg-info
 *.egg
-*.spec
 include
 pyvenv.cfg
 *.pyc
