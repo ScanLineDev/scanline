@@ -20,9 +20,18 @@ reviewme run
 reviewme run --scope <commit, branch, repo>
 
 ```
+# Build and Install 
+1. Generate a build with the `pyinstaller` package:
 
-# Build
-pip3 install -e .
+`pyinstaller aicli-build.spec`
+
+2. This will generate a build in `dist/ailinter-build`. Move that to the public `aicli` repo using Github Releases. Update the referenced build file in `install.sh`
+
+3. Users can now install AI CLI with curl with the command:
+`curl -sSL https://github.com/scottfits/aicli/releases/download/v0.3/install.sh | bash`
+
+# Build with Pip (for testing)
+`pip3 install -e .`
 
 # Run
 reviewme --help to see available commands!
@@ -36,5 +45,3 @@ Update the default rule template and LLM settings in `config.yaml`
 ### Future work 
 - Retrieve the documentation for all imported libraries
 - Trace function calls throughout the codebase
-
-

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from .ailinter import ailinter 
+from reviewme.ailinter import ailinter 
 import click
 import logging
 
