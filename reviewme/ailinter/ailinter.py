@@ -17,7 +17,11 @@ load_dotenv()
 def load_rule_guide(config):
     dir_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
     rule_guide = config['RULE_GUIDE']
-    rule_guide_path = os.path.join(dir_path, f'reviewme/ailinter/rule_templates/{rule_guide}')
+    
+    if getattr(sys, '_MEIPASS', False):
+        rule_guide_path = os.path.join(dir_path, f'reviewme/ailinter/rule_templates/{rule_guide}')
+    else:
+        rule_guide_path = os.path.join(dir_path, f'rule_templates/{rule_guide}')
 
     with open(rule_guide_path, 'r') as f:
         return f.read()

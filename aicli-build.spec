@@ -4,7 +4,7 @@
 block_cipher = None
 
 a = Analysis(
-    ['reviewme/ailinter/ailinter.py'],
+    ['reviewme/cli.py'],
     pathex=[],
     binaries=[],
     datas=[('reviewme/ailinter/config.yaml', 'reviewme/ailinter'),
