@@ -25,10 +25,11 @@ reviewme run --scope <commit, branch, repo>
 
 `pyinstaller aicli-build.spec`
 
-2. This will generate a build in `dist/ailinter-build`.
+2. This will generate a build in `dist/ailinter-build`. Move that to the public `aicli` repo using Github Releases. Update the referenced build file in `install.sh`
 
-3. Users can install with curl with the command:
+3. Users can now install AI CLI with curl with the command:
 `curl -sSL https://raw.githubusercontent.com/stephenkfrey/ailinter/reviewme/install.sh | sudo bash`
+
 # Build with Pip (for testing)
 `pip3 install -e .`
 
