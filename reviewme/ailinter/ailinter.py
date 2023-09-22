@@ -285,13 +285,13 @@ def run(scope, onlyReviewThisFile):
 
     print (f"\n\n=== 💚 Final Organized Feedback 💚===\n{final_organized_issues_to_print}")
 
-    print ("\n\n=== 🔍 Files to review ===\n")
-    print ("\n🔍 " + "\n🔍".join(files_to_review_list))
+    print ("\n\n=== 🔍 Files to review ===")
+    print ("\n🔍 " + "\n🔍 ".join(files_to_review_list))
 
     ## Add logic to get the files that were examined: 
     ## either file_contents or file_paths_changed, depending on 'scope' 
-    print ("\n\n=== ✅ Files that passed ===\n")
-    print ("\n✅ " + "\n✅".join(okay_file_list))
+    print ("\n\n=== ✅ Files that passed ===")
+    print ("\n✅ " + "\n✅ ".join(okay_file_list))
     
     print ("\n\n=== Done. ===\nSee above for code review. \nNow running the rest of your code...\n")
         # if llm_response.strip() != "Pass" and file_path != "ailinter.py":
