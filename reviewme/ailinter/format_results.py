@@ -8,25 +8,25 @@ MAX_RESULTS_PER_CATEGORY_TYPE = config["MAX_RESULTS_PER_CATEGORY_TYPE"]
 
 # Constants
 LIST_OF_ERROR_CATEGORIES = {
-    "💡": "LOGIC ISSUES",
-    "🔒": "SECURITY ISSUES",
-    "🚀": "PERFORMANCE ISSUES",
-    "🏁": "DATA RACE ISSUES",
-    "☑️": "CONSISTENCY ISSUES",
-    "🧪": "TESTABILITY ISSUES",
-    "🛠️": "MAINTAINABILITY ISSUES",
-    "🧩": "MODULARITY ISSUES",
-    "🌀": "COMPLEXITY ISSUES",
-    "⚙️": "OPTIMIZATION ISSUES",
-    "📚": "BEST PRACTICES ISSUES",
-    "⚠️": "ERROR HANDLING ISSUES",  # Adjusted this line
-    "👀": "OBSERVABILITY ISSUES"
+    "💡": "Logic Issues",
+    "🔒": "Security Issues",
+    "🚀": "Performance Issues",
+    "🏁": "Data Race Issues",
+    "☑️": "Consistency Issues",
+    "🧪": "Testability Issues",
+    "🛠️": "Maintainability Issues",
+    "🧩": "Modularity Issues",
+    "🌀": "Complexity Issues",
+    "⚙️": "Optimization Issues",
+    "📚": "Best Practices Issues",
+    "⚠️": "Error Handling Issues",
+    "👀": "Observability Issues"
 }
 
 PRIORITY_MAP = {
-    "🔴": "🔴 High Priority 🔴",
-    "🟠": "🟠 Medium Priority 🟠",
-    "🟡": "🟡 Low Priority 🟡"
+    "🔴": "🔴 High",
+    "🟠": "🟠 Medium",
+    "🟡": "🟡 Low"
 }
 
 # Functions
@@ -56,7 +56,8 @@ def organize_feedback_items(feedback_list):
             # Convert category to emoji-based key
             category_key = None
             for key, value in LIST_OF_ERROR_CATEGORIES.items():
-                if value.split()[0] in category.upper():
+                # if value.split()[0] in category.upper():
+                if value.split()[0] in category:
                     category_key = key
                     break
             

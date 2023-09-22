@@ -10,3 +10,4 @@ pyvenv.cfg
 *.pyc
 __pycache__
 reviewme.egg-info/
+reviewme/ailinter/saved_reviews/
