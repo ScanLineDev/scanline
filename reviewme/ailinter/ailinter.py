@@ -4,7 +4,7 @@ from pprint import pprint
 import logging 
 
 from reviewme.ailinter.helpers import create_openai_chat_completion, create_simple_openai_chat_completion, load_config
-from reviewme.ailinter.format_results import organize_feedback_items, format_feedback_for_print, get_files_to_review, get_okay_files
+from reviewme.ailinter.format_results import organize_feedback_items, format_feedback_for_print, get_files_to_review, get_okay_files, PRIORITY_MAP, LIST_OF_ERROR_CATEGORIES
 
 ###########
 logging.getLogger(__name__)
@@ -65,22 +65,6 @@ def check_and_append_local_imports(code, file_paths):
 ## LLM call and Prompt 
 ############################
 
-LIST_OF_ERROR_CATEGORIES = """
-    - 💡 Logic
-    - 🔒 Security
-    - 🚀 Performance, reliability, and scalability
-    - 🏁 Data races, race conditions, and deadlocks
-    - ☑️ Consistency
-    - 🧪 Testability 
-    - 🛠️ Maintainability
-    - 🧩 Modularity
-    - 🌀 Complexity
-    - ⚙️ Optimization
-    - 📚 Best practices: DRY, SOLID
-    - ⚠️ Error handling
-    - 👀 Observability: Logging and monitoring
-"""
-
 LIST_OF_PRIORITY_GUIDELINES = """High Priority:
 Issues that pose immediate security risks, cause data loss, or critically break functionality.
 Problems that have a direct and substantial impact on business revenue.
@@ -102,18 +86,20 @@ FEEDBACK_ITEM_FORMAT_TEMPLATE = """
     [<PRIORITY_SCORE>] Fail: <a short one-sentence description of the issue >
     Fix: <a short one-sentence suggested fix >
     """
+# format the imported dict to use inside of another f-string 
+LIST_OF_ERROR_CATEGORIES_STRING = ("\n" + "\n".join([f"- {emoji} {name}" for emoji, name in LIST_OF_ERROR_CATEGORIES.items()]))
 
 AILINTER_INSTRUCTIONS=f"""
     Your purpose is to serve as an experienced software engineer to provide a thorough review git diffs of the code
     and generate code snippets to address key ERROR CATEGORIES such as:
-
-    {LIST_OF_ERROR_CATEGORIES}
+    {LIST_OF_ERROR_CATEGORIES_STRING}
 
     Do not comment on minor code style issues, missing
     comments/documentation. Identify and resolve significant
     concerns while deliberately disregarding minor issues.
 
-    - Create a "PRIORITY" for each issue, with values of: "🔴 High "Priority 🔴", "🟠 Medium Priority 🟠", or "🟡 Low Priority 🟡". Assign the priority score according to these guidelines: 
+    - Create a "PRIORITY" for each issue, with values of one of the following: {list(PRIORITY_MAP.values())}. Assign the priority score according to these guidelines: 
+    
     {LIST_OF_PRIORITY_GUIDELINES}
 
     - Mention the exact line number of the issue in the feedback item if possible
@@ -129,6 +115,7 @@ AILINTER_INSTRUCTIONS=f"""
 
     """
 
+print ("---- AILINTER INSTRUCTIONS: ----  ", AILINTER_INSTRUCTIONS)
 #########
 ## Construct the prompt 
 #########
@@ -288,12 +275,11 @@ def run(scope, onlyReviewThisFile):
     print ("\n\n=== 🔍 Files to review ===")
     print ("\n🔍 " + "\n🔍 ".join(files_to_review_list))
 
-    ## Add logic to get the files that were examined: 
-    ## either file_contents or file_paths_changed, depending on 'scope' 
+    ## Add logic to get the files that were examined: either file_contents or file_paths_changed, depending on 'scope' 
     print ("\n\n=== ✅ Files that passed ===")
     print ("\n✅ " + "\n✅ ".join(okay_file_list))
     
-    print ("\n\n=== Done. ===\nSee above for code review. \nNow running the rest of your code...\n")
+    # print ("\n\n=== Done. ===\nSee above for code review. \nNow running the rest of your code...\n")
         # if llm_response.strip() != "Pass" and file_path != "ailinter.py":
         #     with open(file_path, 'w') as f:
         #         f.write(llm_response)

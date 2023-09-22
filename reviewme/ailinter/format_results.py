@@ -7,7 +7,7 @@ config = load_config()
 MAX_RESULTS_PER_CATEGORY_TYPE = config["MAX_RESULTS_PER_CATEGORY_TYPE"]
 
 # Constants
-FEEDBACK_CATEGORIES = {
+LIST_OF_ERROR_CATEGORIES = {
     "💡": "LOGIC ISSUES",
     "🔒": "SECURITY ISSUES",
     "🚀": "PERFORMANCE ISSUES",
@@ -55,7 +55,7 @@ def organize_feedback_items(feedback_list):
             
             # Convert category to emoji-based key
             category_key = None
-            for key, value in FEEDBACK_CATEGORIES.items():
+            for key, value in LIST_OF_ERROR_CATEGORIES.items():
                 if value.split()[0] in category.upper():
                     category_key = key
                     break
@@ -88,13 +88,13 @@ def format_feedback_for_print(organized_feedback, max_items_per_category=MAX_RES
     for feedback_item in organized_feedback:
         feedback_by_category[feedback_item["error_category"]][feedback_item["priority_score"]].append(feedback_item)
     
-    for cat_emoji, cat_name in FEEDBACK_CATEGORIES.items():
+    for cat_emoji, cat_name in LIST_OF_ERROR_CATEGORIES.items():
         if cat_emoji not in feedback_by_category:
             continue
         
         category_feedback = feedback_by_category[cat_emoji]
         
-        result += f"\n======== {cat_name} ========\n\n"
+        result += f"\n======== {cat_emoji} {cat_name} ========\n\n"
         
         for priority_emoji, priority_fullname in PRIORITY_MAP.items():
             if priority_fullname not in category_feedback:
