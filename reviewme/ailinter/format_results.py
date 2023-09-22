@@ -20,7 +20,21 @@ LIST_OF_ERROR_CATEGORIES = {
     "⚙️": "Optimization Issues",
     "📚": "Best Practices Issues",
     "⚠️": "Error Handling Issues",
-    "👀": "Observability Issues"
+}
+
+DESCRIPTIONS_OF_ERROR_CATEGORIES = {
+    "💡": "Logic Issues - Look for errors in the program's logic, such as incorrect calculations, incorrect control flow, or incorrect data manipulations.",
+    "🔒": "Security Issues - Look for vulnerabilities that could be exploited by attackers, such as SQL injection, cross-site scripting (XSS), or insecure data transmission.",
+    "🚀": "Performance Issues - Look for code that could be optimized for better performance, such as inefficient algorithms, unnecessary computations, or excessive memory usage.",
+    "🏁": "Data Race Issues - Look for potential data races in multithreaded code, where two threads access shared data simultaneously and at least one of them modifies it.",
+    "☑️": "Consistency Issues - Look for inconsistencies in the codebase, such as different coding styles, inconsistent naming conventions, or inconsistent use of data structures.",
+    "🧪": "Testability Issues - Look for code that is hard to test, such as tightly coupled components, lack of interfaces, or hidden dependencies.",
+    "🛠️": "Maintainability Issues - Look for code that is hard to maintain, such as large functions or classes, lack of comments, or lack of documentation.",
+    "🧩": "Modularity Issues - Look for lack of modularity in the code, such as large modules, lack of encapsulation, or high coupling between modules.",
+    "🌀": "Complexity Issues - Look for overly complex code, such as nested loops, deep recursion, or complex conditionals.",
+    "⚙️": "Optimization Issues - Look for code that could be optimized for better readability, simplicity, or efficiency.",
+    "📚": "Best Practices Issues - Look for violations of best practices, such as lack of error handling, use of deprecated functions, or lack of code reviews.",
+    "⚠️": "Error Handling Issues - Look for improper error handling, such as ignoring exceptions, lack of error logging, or inappropriate error messages.",
 }
 
 PRIORITY_MAP = {

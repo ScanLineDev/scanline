@@ -4,7 +4,7 @@ from pprint import pprint
 import logging 
 
 from reviewme.ailinter.helpers import create_openai_chat_completion, create_simple_openai_chat_completion, load_config
-from reviewme.ailinter.format_results import organize_feedback_items, format_feedback_for_print, get_files_to_review, get_okay_files, PRIORITY_MAP, LIST_OF_ERROR_CATEGORIES
+from reviewme.ailinter.format_results import organize_feedback_items, format_feedback_for_print, get_files_to_review, get_okay_files, PRIORITY_MAP, LIST_OF_ERROR_CATEGORIES, DESCRIPTIONS_OF_ERROR_CATEGORIES
 
 ###########
 logging.getLogger(__name__)
@@ -87,12 +87,12 @@ FEEDBACK_ITEM_FORMAT_TEMPLATE = """
     Fix: <a short one-sentence suggested fix >
     """
 # format the imported dict to use inside of another f-string 
-LIST_OF_ERROR_CATEGORIES_STRING = ("\n" + "\n".join([f"- {emoji} {name}" for emoji, name in LIST_OF_ERROR_CATEGORIES.items()]))
+DESCRIPTIONS_OF_ERROR_CATEGORIES_STRING = ("\n" + "\n".join([f"- {emoji} {name}" for emoji, name in DESCRIPTIONS_OF_ERROR_CATEGORIES.items()]))
 
 AILINTER_INSTRUCTIONS=f"""
     Your purpose is to serve as an experienced software engineer to provide a thorough review git diffs of the code
     and generate code snippets to address key ERROR CATEGORIES such as:
-    {LIST_OF_ERROR_CATEGORIES_STRING}
+    {DESCRIPTIONS_OF_ERROR_CATEGORIES_STRING}
 
     Do not comment on minor code style issues, missing
     comments/documentation. Identify and resolve significant
