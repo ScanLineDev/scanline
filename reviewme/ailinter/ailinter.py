@@ -1,6 +1,6 @@
-import os
+import os, sys
 from dotenv import load_dotenv
-from .helpers import create_openai_completion, create_openai_chat_completion, create_simple_openai_chat_completion, create_anthropic_completion, load_config
+from reviewme.ailinter.helpers import create_openai_chat_completion, create_simple_openai_chat_completion, load_config
 from pprint import pprint 
 import logging 
 logging.getLogger(__name__)
@@ -13,11 +13,16 @@ load_dotenv()
 ############################
 
 # load the local rule guide .md
-def load_rule_guide(config): 
-    dir_path = os.path.dirname(os.path.realpath(__file__))
+
+def load_rule_guide(config):
+    dir_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
     rule_guide = config['RULE_GUIDE']
-    rule_guide_path = os.path.join(dir_path, f'rule_templates/{rule_guide}')
     
+    if getattr(sys, '_MEIPASS', False):
+        rule_guide_path = os.path.join(dir_path, f'reviewme/ailinter/rule_templates/{rule_guide}')
+    else:
+        rule_guide_path = os.path.join(dir_path, f'rule_templates/{rule_guide}')
+
     with open(rule_guide_path, 'r') as f:
         return f.read()
 
@@ -297,8 +302,16 @@ def run(scope, onlyReviewThisFile):
         file_paths_changed = get_files_changed("HEAD~0")
         diffs = get_file_diffs(file_paths_changed, "HEAD~0")
     elif scope == "branch":
-        file_paths_changed = get_files_changed("main")
-        diffs = get_file_diffs(file_paths_changed, "main")
+        try:
+            file_paths_changed = get_files_changed("master")
+            diffs = get_file_diffs(file_paths_changed, "master")
+        except Exception as e:
+            pass
+        try:
+            file_paths_changed = get_files_changed("main")
+            diffs = get_file_diffs(file_paths_changed, "main")
+        except Exception as e:
+            pass
     elif scope == "repo":
         file_paths_changed = []
         diffs = {}
@@ -366,4 +379,4 @@ def run(scope, onlyReviewThisFile):
     print ("\n\n=== Done. ===\nSee above for code review. \nNow running the rest of your code...\n")
 
 if __name__ == "__main__":
-    run()
+    run("commit", "")
