@@ -1,7 +1,9 @@
+from datetime import datetime
 import os, sys
 from dotenv import load_dotenv
 from pprint import pprint 
 import logging 
+import pandas as pd
 
 from reviewme.ailinter.helpers import create_openai_chat_completion, create_simple_openai_chat_completion, load_config
 from reviewme.ailinter.format_results import organize_feedback_items, format_feedback_for_print, get_files_to_review, get_okay_files, PRIORITY_MAP, LIST_OF_ERROR_CATEGORIES
@@ -33,6 +35,8 @@ RULE_GUIDE_MD = load_rule_guide(config)
 
 SUPPORTED_FILETYPES = config['SUPPORTED_FILETYPES']
 print (f"Supported filetypes: {SUPPORTED_FILETYPES}")
+
+SAVED_REVIEWS_DIR=config['SAVED_REVIEWS_DIR']
 
 ############################
 ## Load all code in the directory 
@@ -99,7 +103,7 @@ AILINTER_INSTRUCTIONS=f"""
     concerns while deliberately disregarding minor issues.
 
     - Create a "PRIORITY" for each issue, with values of one of the following: {list(PRIORITY_MAP.values())}. Assign the priority score according to these guidelines: 
-    
+
     {LIST_OF_PRIORITY_GUIDELINES}
 
     - Mention the exact line number of the issue in the feedback item if possible
@@ -284,6 +288,32 @@ def run(scope, onlyReviewThisFile):
         #     with open(file_path, 'w') as f:
         #         f.write(llm_response)
     print ("\n\n=== Done. ===\nSee above for code review. \nNow running the rest of your code...\n")
+
+    ############################
+    ### Save this review for record-keeping and display ###
+    ############################
+    # save the resulting organized_feedback_dict to a csv
+    now = datetime.now().strftime("%Y%m%d-%H%M%S")
+    absolute_csv_file_path = SAVED_REVIEWS_DIR + "/" + f"organized_feedback_dict_{now}.csv"
+    # save the organized feedback results into a local folder. This can be referenced and updated later, in terminal or the streamlit app 
+    organized_feedback_df = pd.DataFrame(organized_feedback_dict)
+        # Add the emoji and error category name for each error category
+    organized_feedback_df['error_category'] = organized_feedback_df['error_category'].apply(lambda x: f"{x} {LIST_OF_ERROR_CATEGORIES[x]}")
+
+    organized_feedback_df = organized_feedback_df[['error_category', 'priority_score', 'filepath', 'function_name', 'line_number', 'fail', 'fix']] #re-order the columns 
+    # now re-name the columns to be capital and spaces 
+    organized_feedback_df.columns = ['Error Category', 'Priority', 'Filepath', 'Function Name', 'Line Number', 'Fail', 'Fix']
+
+    # save this round of review for record-keeping and display 
+    organized_feedback_df.to_csv(absolute_csv_file_path, index=False)
+
+    ############################
+    ### RUN STREAMLIT DASHBOARD ###
+    ############################
+    # Run the streamlit app: Port and app filepath are loaded from config. the current Review's csv file path is passed as its argument
+    os.system(f"streamlit run --server.port {config['STREAMLIT_APP_PORT']} {config['STREAMLIT_APP_PATH']} -- {absolute_csv_file_path}")
+
+    ### END TEST STREAMLIT DASHBOARD 
 
 if __name__ == "__main__":
     run("commit", "")
