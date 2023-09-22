@@ -2,6 +2,9 @@
 ailinter/__pycache__
 bin
 lib
+build
+*.egg-info
+*.egg
 include
 pyvenv.cfg
 *.pyc

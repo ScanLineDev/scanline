@@ -12,19 +12,26 @@
 
 - Set a local `.env` file with your `OPENAI_API_KEY`, or `export OPENAI_API_KEY=xxx`
 
-```py
-from ailinter import ailinter 
+```bash
+# one line automated code review 
+reviewme run 
 
-def main():
-    print ("Your program here...")
+# optional: set the scope 
+reviewme run --scope <commit, branch, repo>
 
-if __name__ == "__main__":   
-    ailinter.run()          # --> run AILinter 
-    main()
 ```
+# Build and Install 
+1. Generate a build with the `pyinstaller` package:
 
-# Build
-pip3 install -e .
+`pyinstaller aicli-build.spec`
+
+2. This will generate a build in `dist/ailinter-build`. Move that to the public `aicli` repo using Github Releases. Update the referenced build file in `install.sh`
+
+3. Users can now install AI CLI with curl with the command:
+`curl -sSL https://github.com/scottfits/aicli/releases/download/v0.3/install.sh | bash`
+
+# Build with Pip (for testing)
+`pip3 install -e .`
 
 # Run
 reviewme --help to see available commands!
@@ -38,5 +45,3 @@ Update the default rule template and LLM settings in `config.yaml`
 ### Future work 
 - Retrieve the documentation for all imported libraries
 - Trace function calls throughout the codebase
-
-

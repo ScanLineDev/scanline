@@ -1,7 +1,10 @@
-import os
+import os, sys
 from dotenv import load_dotenv
-from .helpers import create_openai_completion, create_openai_chat_completion, create_simple_openai_chat_completion, create_anthropic_completion, load_config
+from reviewme.ailinter.helpers import create_openai_chat_completion, create_simple_openai_chat_completion, load_config
 from pprint import pprint 
+import logging 
+logging.getLogger(__name__)
+
 load_dotenv()
 
 
@@ -10,11 +13,16 @@ load_dotenv()
 ############################
 
 # load the local rule guide .md
-def load_rule_guide(config): 
-    dir_path = os.path.dirname(os.path.realpath(__file__))
+
+def load_rule_guide(config):
+    dir_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
     rule_guide = config['RULE_GUIDE']
-    rule_guide_path = os.path.join(dir_path, f'rule_templates/{rule_guide}')
     
+    if getattr(sys, '_MEIPASS', False):
+        rule_guide_path = os.path.join(dir_path, f'reviewme/ailinter/rule_templates/{rule_guide}')
+    else:
+        rule_guide_path = os.path.join(dir_path, f'rule_templates/{rule_guide}')
+
     with open(rule_guide_path, 'r') as f:
         return f.read()
 
@@ -69,14 +77,30 @@ LIST_OF_ERROR_CATEGORIES = """
     - 👀 Observability: Logging and monitoring
 """
 
+LIST_OF_PRIORITY_GUIDELINES = """High Priority:
+Issues that pose immediate security risks, cause data loss, or critically break functionality.
+Problems that have a direct and substantial impact on business revenue.
+Must-have features or issues that are absolutely essential for a release.
+
+Medium Priority:
+Performance issues that degrade user experience but don't cripple the system.
+Important but non-critical features, and moderate user-experience concerns.
+Issues impacting internal tools and operations but not directly affecting customers.
+
+Low Priority:
+Nice-to-have features and minor UI/UX issues that don't affect core functionality.
+Tech debt items that are important long-term but not urgent.
+Issues identified as non-essential for the current release cycle or having low overall impact.
+"""
+
 FEEDBACK_ITEM_FORMAT_TEMPLATE = """
-    ** <FILEPATH>:<FUNCTION_NAME>:<ERROR CATEGORY> ** 
+    ** <FILEPATH>:<FUNCTION_NAME>:<LINE_NUMBER> <ERROR CATEGORY> ** 
     [<PRIORITY_SCORE>] Fail: <a short one-sentence description of the issue >
     Fix: <a short one-sentence suggested fix >
     """
 
 AILINTER_INSTRUCTIONS=f"""
-    Your purpose is to serve as an experienced software engineer to provide a thorough review git diffs of the code
+    Your purpose is to serve as an experienced developer and to provide a thorough review of git diffs of the code
     and generate code snippets to address key ERROR CATEGORIES such as:
 
     {LIST_OF_ERROR_CATEGORIES}
@@ -85,8 +109,12 @@ AILINTER_INSTRUCTIONS=f"""
     comments/documentation. Identify and resolve significant
     concerns while deliberately disregarding minor issues.
 
-    - Create a "PRIORITY" for each issue, with values of: "🔴 High "Priority 🔴", "🟠 Medium Priority 🟠", or "🟡 Low Priority 🟡" 
+    Make sure to review the code in the context of the programming language standards and best practices.
 
+    - Create a "PRIORITY" for each issue, with values of: "🔴 High "Priority 🔴", "🟠 Medium Priority 🟠", or "🟡 Low Priority 🟡". Assign the priority score according to these guidelines: 
+    {LIST_OF_PRIORITY_GUIDELINES}
+
+    Then: 
     - Assign it an ERROR CATEGORY from the list above.
 
     - Notice the FUNCTION_NAME 
@@ -145,16 +173,20 @@ def get_system_prompt_for_final_summary():
 
     format_feedback_list_prompt = f"""You are an expert programmer doing a code review. You will receive a list of feedback segments for each file. Your job is to 
     - review the feedback items
-    - cluster all of them by ERROR CATEGORY 
+    - cluster all of the feedback items by ERROR CATEGORY 
     - Within each category, rank-order them by PRIORITY_SCORE, with 0 the highest, then 1, 2, 3, 4, and finally 5
     - Return the formatted list of feeedback items. 
+    - Make sure there are at most 3 items per each feedback category
+    - Do not mention the same feedback item in multiple categories, just put it in at most 1 category
+    - If you see duplicate feedback items within a file, aggregate them into a single feedback item with a list of the lines it occurs
+    - Mention the exact line number of the issue in the feedback item if possible
 
     Concretely, each feedback item is formatted like this: 
     ---
     {FEEDBACK_ITEM_FORMAT_TEMPLATE}
     ---
 
-    The ERROR CATEGORIES are:
+    The FEEDBACK CATEGORIES are:
     ---
     {LIST_OF_ERROR_CATEGORIES}
     ---
@@ -167,13 +199,13 @@ def get_system_prompt_for_final_summary():
 
     --🔴 High 🔴---
 
-    * script.py:  my_function 
+    * script.py:281 some_function 
     - Fail: <the description of issue>
     - Fix: <the suggested fix> 
 
     --🟠 Medium 🟠---
 
-    * otherscript.lpy:  lol_function 
+    * otherscript.py:14  some_function 
     - Fail: <the description of issue>
     - Fix: <the suggested fix> 
 
@@ -181,13 +213,13 @@ def get_system_prompt_for_final_summary():
     ========= CONSISTENCY ISSUES =========
     --🟠 Medium 🟠---
 
-    * script.py:  my_function
+    * script.py:420  my_function
     - Fail: <the description of issue>
     - Fix: <the suggested fix> 
 
     --🟡 Low 🟡---
 
-    * otherscript.lpy:  lol_function
+    * otherscript.py:69  some_function
     - Fail: <the description of issue>
     - Fix: <the suggested fix> 
 
@@ -236,8 +268,17 @@ def get_final_organized_feedback_from_llm(feedback_list):
 ## Main 
 ############################
 
+def review_code(code):
+    llm_response = create_openai_chat_completion(
+        messages = get_chat_completion_messages_for_review(code), 
+        model = "gpt-4",
+    ) 
 
-def run(scope="branch"): 
+    return llm_response
+
+ 
+
+def run(scope, onlyReviewThisFile): 
     # Get all .py files in this directory and subdirectories
     excluded_dirs = ["bin", "lib", "include", "env"]
     file_paths = []
@@ -261,8 +302,16 @@ def run(scope="branch"):
         file_paths_changed = get_files_changed("HEAD~0")
         diffs = get_file_diffs(file_paths_changed, "HEAD~0")
     elif scope == "branch":
-        file_paths_changed = get_files_changed("main")
-        diffs = get_file_diffs(file_paths_changed, "main")
+        try:
+            file_paths_changed = get_files_changed("master")
+            diffs = get_file_diffs(file_paths_changed, "master")
+        except Exception as e:
+            pass
+        try:
+            file_paths_changed = get_files_changed("main")
+            diffs = get_file_diffs(file_paths_changed, "main")
+        except Exception as e:
+            pass
     elif scope == "repo":
         file_paths_changed = []
         diffs = {}
@@ -271,49 +320,44 @@ def run(scope="branch"):
             file_paths_changed.append(file_path)
             diffs[file_path] = diff
         
-    # print(f"Files changed: {file_paths_changed}")
-    # print(f"File diffs: {diffs}")
-    
-    for file_path in file_paths_changed:
-        content = diffs[file_path]
-        print(f"\n== Checking {file_path} ==")
+    # Define the maximum concurrency
+    from concurrent.futures import ThreadPoolExecutor
+    MAX_CONCURRENCY = 1
 
-        if content == "" or content == None:
-            continue
+    # Create a ThreadPoolExecutor with the maximum concurrency
+    with ThreadPoolExecutor(max_workers=MAX_CONCURRENCY) as executor:
+        # Submit the file review completion jobs to the executor
+        futures = []
+        for file_path in file_paths_changed:
+            if onlyReviewThisFile != "" and onlyReviewThisFile not in file_path:
+                continue
 
-        # Append imported local modules' code to the existing code
-        current_code_to_review = check_and_append_local_imports(content, file_paths)
-        
-        ### TESTING 
-        # pprint (get_chat_completion_messages(current_code_to_review))
-               ###
-        
-        # Call openai Chat Completion Model 
-        llm_response = create_openai_chat_completion(
-            messages = get_chat_completion_messages_for_review(current_code_to_review), 
-            model = "gpt-4",
-        ) 
+                # check that onlyThisFile is in the file path or else skip 
+            if onlyReviewThisFile != "" and onlyReviewThisFile not in file_path:
+                logging.debug(f"Skipping {file_path} because it does not match onlyReviewThisFile {onlyReviewThisFile}")
+                continue
 
-        if llm_response is None:
-            continue
+            content = diffs[file_path]
+            print(f"\n== Checking {file_path} ==")
 
+            if content == "" or content == None:
+                continue
 
-        feedback_list.append(llm_response)
-
-        ### Call a normal Completion Model 
-        # llm_response = create_anthropic_completion(
-        #     prompt = get_completion_prompt(current_code_to_review)
-        # ) 
-        
-        # print(f"Code Review: \n{llm_response}")
-        
-        ### --- Future feature --- 
-        ## If the OpenAI response is not "Pass", rewrite the .py file with the OpenAI response
-        if llm_response.strip() != "Pass":
-            attention_files_list.append(file_path)
+            # Append imported local modules' code to the existing code
+            current_code_to_review = check_and_append_local_imports(content, file_paths)
             
-        else: 
-            okay_file_list.append(file_path)
+            import time
+            time.sleep(0.25)
+            futures.append(executor.submit(review_code, current_code_to_review))
+
+        # Wait for all the jobs to complete
+        for future in futures:
+            llm_response = future.result()
+
+            if llm_response is None:
+                continue
+
+            feedback_list.append(llm_response)
 
     # print ("\n\n=== 📝 Feedback List ===\n")
     # pprint (feedback_list)
@@ -335,4 +379,4 @@ def run(scope="branch"):
     print ("\n\n=== Done. ===\nSee above for code review. \nNow running the rest of your code...\n")
 
 if __name__ == "__main__":
-    run()
+    run("commit", "")

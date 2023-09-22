@@ -1,1 +1,1 @@
-from .cli import cli
+from reviewme.cli import cli
