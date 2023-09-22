@@ -1,12 +1,14 @@
 import os, sys
 from dotenv import load_dotenv
-from reviewme.ailinter.helpers import create_openai_chat_completion, create_simple_openai_chat_completion, load_config
 from pprint import pprint 
 import logging 
+
+from reviewme.ailinter.helpers import create_openai_chat_completion, create_simple_openai_chat_completion, load_config
+from reviewme.ailinter.format_results import organize_feedback_items, format_feedback_for_print
+
+###########
 logging.getLogger(__name__)
-
 load_dotenv()
-
 
 ############################
 ## Load local rule guide 
@@ -111,6 +113,8 @@ AILINTER_INSTRUCTIONS=f"""
 
     - Create a "PRIORITY" for each issue, with values of: "🔴 High "Priority 🔴", "🟠 Medium Priority 🟠", or "🟡 Low Priority 🟡". Assign the priority score according to these guidelines: 
     {LIST_OF_PRIORITY_GUIDELINES}
+
+    - Mention the exact line number of the issue in the feedback item if possible
 
     Then: 
     - Assign it an ERROR CATEGORY from the list above.
@@ -237,29 +241,37 @@ def get_user_prompt_for_final_summary(feedback_list):
     """
     return format_user_prompt.format(feedback_items_list=curr_feedback_items_list)
 
-def get_final_organized_feedback_from_llm(feedback_list):
-    # Organize the feedback by ERROR CATEGORY and PRIORITY_SCORE
-    full_prompt_for_formatted_feedback = get_system_prompt_for_final_summary()
+def get_final_organized_feedback(feedback_list):
 
-    llm_response = create_simple_openai_chat_completion(
-        system_message = full_prompt_for_formatted_feedback,
-        user_message = get_user_prompt_for_final_summary(feedback_list)
-    )
+    organized_feedback_items = organize_feedback_items(feedback_list)
+    formatted_feedback = format_feedback_for_print(organized_feedback_items)
 
-    # # Call a normal Completion Model 
-    # llm_response = create_openai_chat_completion(
-    #     messages = [
-    #                 {"role": "system", 
-    #                  "content": full_prompt_for_formatted_feedback},
+    return formatted_feedback
 
-    #                 {"role": "user", 
-    #                  "content": get_user_prompt_for_final_summary(feedback_list)}
-    #     ], 
-    #     model = "gpt-3.5-turbo", 
-    #     temperature = 0.0
-    # ) 
 
-    return llm_response
+# def get_final_organized_feedback_from_llm(feedback_list):
+    # # Organize the feedback by ERROR CATEGORY and PRIORITY_SCORE
+    # full_prompt_for_formatted_feedback = get_system_prompt_for_final_summary()
+
+    # llm_response = create_simple_openai_chat_completion(
+    #     system_message = full_prompt_for_formatted_feedback,
+    #     user_message = get_user_prompt_for_final_summary(feedback_list)
+    # )
+
+    # # # Call a normal Completion Model 
+    # # llm_response = create_openai_chat_completion(
+    # #     messages = [
+    # #                 {"role": "system", 
+    # #                  "content": full_prompt_for_formatted_feedback},
+
+    # #                 {"role": "user", 
+    # #                  "content": get_user_prompt_for_final_summary(feedback_list)}
+    # #     ], 
+    # #     model = "gpt-3.5-turbo", 
+    # #     temperature = 0.0
+    # # ) 
+
+    # return llm_response
 
 
 ############################
@@ -358,9 +370,12 @@ def run(scope, onlyReviewThisFile):
             feedback_list.append(llm_response)
 
     # print ("\n\n=== 📝 Feedback List ===\n")
-    # pprint (feedback_list)
+    pprint (feedback_list)
 
-    final_organized_feedback= get_final_organized_feedback_from_llm(feedback_list)
+    # final_organized_feedback= get_final_organized_feedback(feedback_list)
+    
+    organized_feedback_items = organize_feedback_items(feedback_list)
+    final_organized_feedback = format_feedback_for_print(organized_feedback_items)
 
     print (f"\n\n=== 💚 Final Organized Feedback 💚===\n{final_organized_feedback}")
 
