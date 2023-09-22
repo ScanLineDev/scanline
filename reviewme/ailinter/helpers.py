@@ -102,3 +102,4 @@ MODEL_MAP = {
    "gpt-4-turbo": create_openai_completion, 
    "claude-2": create_anthropic_completion
 }
+
