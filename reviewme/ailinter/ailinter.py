@@ -140,8 +140,8 @@ def get_completion_prompt (code):
 
 def get_chat_completion_messages_for_review(code, full_file_content):
     chat_messsages = [
-                    {"role": "system", "content": f"{AILINTER_INSTRUCTIONS} \n\n === RULE GUIDE: === \n{RULE_GUIDE_MD} \n\n"},
-                    {"role": "user", "content": f"=== CODE TO REVIEW === ```\n{code} \n```=== FULL FILE CONTENT BEFORE EDITS===```\n{full_file_content}\n```\n"},
+                    {"role": "system", "content": f"{AILINTER_INSTRUCTIONS} \n\n === RULE GUIDE: === \n{RULE_GUIDE_MD} \n\n === FULL FILE CONTENT BEFORE CHANGES FOR REFERENCE=== \n{full_file_content} \n"},
+                    {"role": "user", "content": f"=== CODE TO REVIEW === ```\n{code}\n```"},
                 ]
     return chat_messsages
 
