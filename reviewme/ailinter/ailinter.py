@@ -95,7 +95,7 @@ FEEDBACK_ITEM_FORMAT_TEMPLATE = """
     """
 
 AILINTER_INSTRUCTIONS=f"""
-    Your purpose is to serve as an experienced software engineer to provide a thorough review git diffs of the code
+    Your purpose is to serve as an experienced developer and to provide a thorough review of git diffs of the code
     and generate code snippets to address key ERROR CATEGORIES such as:
 
     {LIST_OF_ERROR_CATEGORIES}
@@ -103,6 +103,8 @@ AILINTER_INSTRUCTIONS=f"""
     Do not comment on minor code style issues, missing
     comments/documentation. Identify and resolve significant
     concerns while deliberately disregarding minor issues.
+
+    Make sure to review the code in the context of the programming language standards and best practices.
 
     - Create a "PRIORITY" for each issue, with values of: "🔴 High "Priority 🔴", "🟠 Medium Priority 🟠", or "🟡 Low Priority 🟡". Assign the priority score according to these guidelines: 
     {LIST_OF_PRIORITY_GUIDELINES}
@@ -307,7 +309,7 @@ def run(scope, onlyReviewThisFile):
         
     # Define the maximum concurrency
     from concurrent.futures import ThreadPoolExecutor
-    MAX_CONCURRENCY = 10
+    MAX_CONCURRENCY = 1
 
     # Create a ThreadPoolExecutor with the maximum concurrency
     with ThreadPoolExecutor(max_workers=MAX_CONCURRENCY) as executor:
