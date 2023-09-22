@@ -40,7 +40,6 @@ def extract_feedback_items(feedback_string):
 
 # Function to organize feedback items
 def organize_feedback_items(feedback_list):
-    print ('running organize_feedback_items')
     """
     The decision to use a list within a list (or a "double list") for the line numbers was to accommodate feedback items that may have multiple occurrences within the same file.
 
@@ -77,13 +76,10 @@ def organize_feedback_items(feedback_list):
             if not duplicate_found:
                 organized_feedback[category_key][priority].append([filepath, function_name, [line_number], fail, fix])
 
-    from pprint import pprint 
-    pprint (dict(organized_feedback))
     return dict(organized_feedback)
 
 # Function to format feedback for print
 def format_feedback_for_print(organized_feedback, max_items_per_category=3):
-    print ('running format_feedback_for_print')
     # Format the organized feedback
     result = ""
     
@@ -110,3 +106,30 @@ def format_feedback_for_print(organized_feedback, max_items_per_category=3):
                 result += f"* {filepath}:{lines_str} {function_name}\n- Fail: {fail}\n- Fix: {fix}\n\n"
     
     return result
+
+import os
+
+# 1. Creating the files_to_review_list
+def get_files_to_review(organized_feedback):
+    files_to_review_set = set()  # Using a set to avoid duplicates
+    
+    for category_data in organized_feedback.values():
+        for priority_data in category_data.values():
+            for feedback_item in priority_data:
+                filepath = feedback_item[0]
+                files_to_review_set.add(filepath)
+                
+    return list(files_to_review_set)
+
+# 2. Creating the okay_file_list
+def get_okay_files(directory_path, files_to_review_list):
+    okay_file_list = []
+    
+    # Use os.walk to get all files in the directory
+    for dirpath, dirnames, filenames in os.walk(directory_path):
+        for filename in filenames:
+            full_filepath = os.path.join(dirpath, filename)
+            if full_filepath not in files_to_review_list:
+                okay_file_list.append(full_filepath)
+                
+    return okay_file_list

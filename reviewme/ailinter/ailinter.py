@@ -4,7 +4,7 @@ from pprint import pprint
 import logging 
 
 from reviewme.ailinter.helpers import create_openai_chat_completion, create_simple_openai_chat_completion, load_config
-from reviewme.ailinter.format_results import organize_feedback_items, format_feedback_for_print
+from reviewme.ailinter.format_results import organize_feedback_items, format_feedback_for_print, get_files_to_review, get_okay_files
 
 ###########
 logging.getLogger(__name__)
@@ -30,6 +30,9 @@ def load_rule_guide(config):
 
 config = load_config()
 RULE_GUIDE_MD = load_rule_guide(config)
+
+SUPPORTED_FILETYPES = config['SUPPORTED_FILETYPES']
+print (f"Supported filetypes: {SUPPORTED_FILETYPES}")
 
 ############################
 ## Load all code in the directory 
@@ -164,7 +167,7 @@ def get_file_diffs(file_paths, target):
     for file_path in file_paths:
             file_diffs[file_path] = os.popen("git diff --unified=0 {0} {1}".format(target, file_path)).read()
             print("git diff --unified=0 {0} {1}".format(target, file_path))
-    print(file_diffs)
+    # print(file_diffs)
     return file_diffs
 
 ############################
@@ -369,21 +372,29 @@ def run(scope, onlyReviewThisFile):
 
             feedback_list.append(llm_response)
 
+    # # for testing 
     # print ("\n\n=== 📝 Feedback List ===\n")
-    pprint (feedback_list)
+    # pprint (feedback_list)
 
-    # final_organized_feedback= get_final_organized_feedback(feedback_list)
-    
-    organized_feedback_items = organize_feedback_items(feedback_list)
-    final_organized_feedback = format_feedback_for_print(organized_feedback_items)
+    # get the organized *dictionary* of feedback items
+    organized_feedback_dict = organize_feedback_items(feedback_list)
 
-    print (f"\n\n=== 💚 Final Organized Feedback 💚===\n{final_organized_feedback}")
+    # get the *pretty print* for them for terminal 
+    final_organized_issues_to_print = format_feedback_for_print(organized_feedback_dict)
+
+    # get the list of files *to review*
+    files_to_review_list = get_files_to_review(organized_feedback_dict)
+    okay_file_list = get_okay_files(directory_path=".", files_to_review_list=files_to_review_list)
+
+    print (f"\n\n=== 💚 Final Organized Feedback 💚===\n{final_organized_issues_to_print}")
 
     print ("\n\n=== 🔍 Files to review ===\n")
-    print ("\n🔍".join(attention_files_list))
+    print ("\n🔍 " + "\n🔍".join(files_to_review_list))
 
-    print ("\n\n=== ✅ Files that passed ===\n")
-    print ("\n✅".join(okay_file_list))
+    ## Add logic to get the files that were examined: 
+    ## either file_contents or file_paths_changed, depending on 'scope' 
+    # print ("\n\n=== ✅ Files that passed ===\n")
+    # print ("\n✅ " + "\n✅".join(okay_file_list))
     
     print ("\n\n=== Done. ===\nSee above for code review. \nNow running the rest of your code...\n")
         # if llm_response.strip() != "Pass" and file_path != "ailinter.py":
