@@ -1,6 +1,7 @@
-anthropic==0.3.11
+click==8.1.7
 openai==0.27.2
+pandas==2.0.3
 python-dotenv==1.0.0
-pyinstaller==5.13.2
 PyYAML==6.0.1
-PyYAML==6.0.1
+setuptools==68.1.2
+streamlit==1.26.0
