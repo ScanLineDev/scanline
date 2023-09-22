@@ -129,7 +129,7 @@ def get_okay_files(directory_path, files_to_review_list):
     for dirpath, dirnames, filenames in os.walk(directory_path):
         for filename in filenames:
             full_filepath = os.path.join(dirpath, filename)
-            if full_filepath not in files_to_review_list:
+            if full_filepath not in files_to_review_list and full_filepath.endswith(".py"):
                 okay_file_list.append(full_filepath)
                 
     return okay_file_list
