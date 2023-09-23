@@ -105,9 +105,11 @@ AILINTER_INSTRUCTIONS=f"""
     and generate code snippets to address key ERROR CATEGORIES such as:
     {DESCRIPTIONS_OF_ERROR_CATEGORIES_STRING}
 
-    Do not comment on minor code style issues, missing
-    comments/documentation. Identify and resolve significant
-    concerns while deliberately disregarding minor issues.
+    You'll be given the git diffs, and next the full content of the original file before the edits.
+
+    Please read throughthe code line by line to deeply understand it, take your tie, and look carefully for what can be improved
+    Identify and resolve significant concerns 
+    Make sure before claiming an issue that you've also looked at the full content of the original file so you have full context
 
     Make sure to review the code in the context of the programming language standards and best practices.
     
@@ -137,10 +139,10 @@ def get_completion_prompt (code):
     completion_prompt = f"{AILINTER_INSTRUCTIONS} \n\n === RULE GUIDE: === {RULE_GUIDE_MD} \n\n === CODE TO REVIEW === ```\n {code} \n```"
     return completion_prompt
 
-def get_chat_completion_messages_for_review(code):
+def get_chat_completion_messages_for_review(code, full_file_content):
     chat_messsages = [
-                    {"role": "system", "content": f"{AILINTER_INSTRUCTIONS} \n\n === RULE GUIDE: === \n{RULE_GUIDE_MD} \n\n"},
-                    {"role": "user", "content": f"=== CODE TO REVIEW === ```\n{code} \n```"}
+                    {"role": "system", "content": f"{AILINTER_INSTRUCTIONS} \n\n === RULE GUIDE: === \n{RULE_GUIDE_MD} \n\n === FULL FILE CONTENT BEFORE CHANGES FOR REFERENCE=== \n{full_file_content} \n"},
+                    {"role": "user", "content": f"=== CODE TO REVIEW === ```\n{code}\n```"},
                 ]
     return chat_messsages
 
@@ -181,13 +183,17 @@ def get_final_organized_feedback(feedback_list):
 ## Main 
 ############################
 
-def review_code(code):
+def review_code(code, full_file_content):
     llm_response = create_openai_chat_completion(
-        messages = get_chat_completion_messages_for_review(code), 
+        messages = get_chat_completion_messages_for_review(code, full_file_content),
         model = "gpt-4",
     ) 
 
     return llm_response
+
+def read_file(file_path):
+    with open(file_path, 'r') as f:
+        return f.read()
 
 def run(scope, onlyReviewThisFile): 
     # Get all .py files in this directory and subdirectories
@@ -197,10 +203,10 @@ def run(scope, onlyReviewThisFile):
     for root, dirs, files in os.walk("."):
         dirs[:] = [d for d in dirs if d not in excluded_dirs]
         for file in files:
-            if file.endswith(".py") and file != "__init__.py":
-                full_file_path = os.path.join(root, file)
-                file_paths.append(full_file_path)
+            full_file_path = os.path.join(root, file)
+            file_paths.append(full_file_path)
 
+    print(file_paths)
 
     # Get all .py files in this directory and subdirectories that changed on this git branch compared to master
     # file_paths_changed = get_files_changed()
@@ -255,10 +261,11 @@ def run(scope, onlyReviewThisFile):
 
             # Append imported local modules' code to the existing code
             current_code_to_review = check_and_append_local_imports(content, file_paths)
+            full_file_content = read_file(file_path)
             
             import time
             time.sleep(0.25)
-            futures.append(executor.submit(review_code, current_code_to_review))
+            futures.append(executor.submit(review_code, current_code_to_review, full_file_content))
 
         # Wait for all the jobs to complete
         for future in futures:
