@@ -15,13 +15,13 @@ from pandas.api.types import (
 ########################
 
 st.set_page_config(
-    page_title="AI Feedback Viewer",
+    page_title="AI Feedback Review",
     page_icon="💚",
     layout="wide",
     initial_sidebar_state="collapsed", 
 )
 # st.title("💚 AI Feedback Viewer 💚")
-st.markdown("<h1 style='text-align: center;'>💚 AI Feedback Viewer 💚</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>💚 AI Feedback Review 💚</h1>", unsafe_allow_html=True)
 
 ################################
 ## DATAFRAME FILTER 
@@ -126,6 +126,12 @@ def display_dataframe(df):
     }
     table.dataframe th {
         text-align: center;
+        font-size: 20px;
+        color: #ffffff; 
+    }    
+    table.dataframe code {
+        color: #ffffff;
+        font-size: 14px;
     }
     </style>
     """
