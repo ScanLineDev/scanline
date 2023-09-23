@@ -130,7 +130,7 @@ def display_dataframe(df):
         color: #ffffff; 
     }    
     table.dataframe code {
-        color: #ffffff;
+        color: #99ffcc;
         font-size: 14px;
     }
     </style>
