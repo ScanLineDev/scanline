@@ -9,9 +9,9 @@ MAX_RESULTS_PER_CATEGORY_TYPE = config["MAX_RESULTS_PER_CATEGORY_TYPE"]
 # Constants
 LIST_OF_ERROR_CATEGORIES = {
     "💡": "Logic Issues",
+    "🏁": "Data Race Issues",
     "🔒": "Security Issues",
     "🚀": "Performance Issues",
-    "🏁": "Data Race Issues",
     "☑️": "Consistency Issues",
     "🧪": "Testability Issues",
     "🧩": "Modularity Issues",

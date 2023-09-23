@@ -75,22 +75,6 @@ def check_and_append_local_imports(code, file_paths):
 ## LLM call and Prompt 
 ############################
 
-# LIST_OF_PRIORITY_GUIDELINES = """High Priority:
-# Issues that pose immediate security risks, cause data loss, or critically break functionality.
-# Problems that have a direct and substantial impact on business revenue.
-# Must-have features or issues that are absolutely essential for a release.
-
-# Medium Priority:
-# Performance issues that degrade user experience but don't cripple the system.
-# Important but non-critical features, and moderate user-experience concerns.
-# Issues impacting internal tools and operations but not directly affecting customers.
-
-# Low Priority:
-# Nice-to-have features and minor UI/UX issues that don't affect core functionality.
-# Tech debt items that are important long-term but not urgent.
-# Issues identified as non-essential for the current release cycle or having low overall impact.
-# """
-
 LIST_OF_PRIORITY_GUIDELINES = """🔴 High: 
     This priority is assigned to code issues that have a critical impact on the program's functionality, performance, or security. These issues can cause system crashes, data loss, or security breaches, and should be addressed immediately to prevent severe consequences.
 

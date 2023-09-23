@@ -109,14 +109,15 @@ st.cache_data()
 def load_data(file_path):
     return pd.read_csv(file_path)
 
+import markdown
+
 def display_dataframe(df):
     # Replace newline characters with HTML line breaks
     for col in df.columns:
         if df[col].dtype == 'object':
-            df[col] = df[col].str.replace('\n', '<br>')
+            df[col] = df[col].apply(lambda x: markdown.markdown(x.replace('\n', '<br>')))
 
     # Define CSS to control column widths
-    
     css = """
     <style>
     table.dataframe td {
@@ -126,11 +127,9 @@ def display_dataframe(df):
     table.dataframe th {
         text-align: center;
     }
-
     </style>
     """
 
-    ### Table Mode 
     # Apply CSS and display DataFrame
     st.markdown(css, unsafe_allow_html=True)
     st.markdown(df.to_html(escape=False, index=False), unsafe_allow_html=True)
@@ -150,12 +149,31 @@ csv_file_path = sys.argv[1]
 # print ("csv_file_path: ", csv_file_path)
 df = load_data(csv_file_path)
 
+df_high = df.copy()
+df_others = df.copy()
+
+# Filter the dataframe to only show high priority items, OR items in "Logic Issues" and "Race Conditions" that have "Medium" Priority
+df_high = df[(df['Priority'] == '🔴 High') | 
+             ((df['Error Category'].isin(['💡 Logic Issues', '🏁 Data Race Issues'])) & 
+              (df['Priority'] == '🟠 Medium'))]
+
+# Filter the dataframe to only show medium and low priority items, that were NOT already included in the df_high dataframe
+df_others = df[~df.index.isin(df_high.index)]
+
 # check if df is empty 
 if df.empty or df is None:
     st.write("No feedback items to display")
 else: 
+    st.write("### 🔴 Your Top Items")
     # Display the DataFrame
-    display_dataframe(df)
+    display_dataframe(df_high)
+    # add some space and a horizontal seperator
+    st.text(" ")
+    st.text(" ")
+    st.write("---")
+    st.text(" ")
+    st.write("### 🟠 Medium and 🟡 Low Priority Items")
+    display_dataframe(df_others)
 
 
 ################################
