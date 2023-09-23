@@ -252,10 +252,6 @@ def run(scope, onlyReviewThisFile):
 
     # Create a ThreadPoolExecutor with the maximum concurrency
     with ThreadPoolExecutor(max_workers=MAX_CONCURRENCY) as executor:
-
-        # debug 
-        print(f"##### os filepath: {os.path.abspath(__file__)}, os cwd: {os.getcwd()}")
-
         # Submit the file review completion jobs to the executor
         futures = []
         for file_path in file_paths_changed:
@@ -294,8 +290,8 @@ def run(scope, onlyReviewThisFile):
     ### Format and display the results 
     ############################
     # # for testing 
-    print ("\n\n=== 📝 Feedback List ===\n")
-    pprint (feedback_list)
+    # print ("\n\n=== 📝 Feedback List ===\n")
+    # pprint (feedback_list)
 
     if feedback_list == [] or feedback_list == None:
         print ("\n\n=== No feedback found. Ending reviewme program. ===\n")
@@ -329,21 +325,18 @@ def run(scope, onlyReviewThisFile):
     ############################
     ### Save this review for record-keeping and display
     ############################
-    # save the resulting organized_feedback_dict to a csv
+    # Save the resulting organized_feedback_dict to a csv
     now = datetime.now().strftime("%Y%m%d-%H%M%S")
-    # Get the directory of the current script
     script_dir = os.path.dirname(os.path.abspath(__file__))
     absolute_csv_file_path = os.path.join(script_dir, SAVED_REVIEWS_DIR, f"organized_feedback_dict_{now}.csv")
-    print ("ABSOLUTE FILEPATH", absolute_csv_file_path)
+    print ("Absolute filepath for saved_review csv: ", absolute_csv_file_path)
     
-    # save the organized feedback results into a local folder. This can be referenced and updated later, in terminal or the streamlit app 
+    # Save the organized feedback results into a local folder. This can be referenced and updated later, in terminal or the streamlit app 
     organized_feedback_df = pd.DataFrame(organized_feedback_dict)
-        # Add the emoji and error category name for each error category
+    # Add the emoji and error category name for each error category
     organized_feedback_df['error_category'] = organized_feedback_df['error_category'].apply(lambda x: f"{x} {LIST_OF_ERROR_CATEGORIES[x]}")
-
     organized_feedback_df = organized_feedback_df[['error_category', 'priority_score', 'filepath', 'function_name', 'line_number', 'fail', 'fix']] #re-order the columns 
-    organized_feedback_df.columns = ['Error Category', 'Priority', 'Filepath', 'Function Name', 'Line Number', 'Fail', 'Fix'] # re-name the columns 
-
+    organized_feedback_df.columns = ['Error Category', 'Priority', 'Filepath', 'Function Name', 'Line Number', 'Fail', 'Fix']  # re-name the columns
     # save this round of review for record-keeping and display 
     organized_feedback_df.to_csv(absolute_csv_file_path, index=False)
 
@@ -351,7 +344,8 @@ def run(scope, onlyReviewThisFile):
     ############################
     ### RUN STREAMLIT DASHBOARD 
     ############################
-    STREAMLIT_APP_PATH=config['STREAMLIT_APP_PATH']
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    STREAMLIT_APP_PATH = os.path.join(script_dir, config['STREAMLIT_LOCAL_PATH'])
     # Run the streamlit app: Port and app filepath are loaded from config. The current Review's csv filepath is passed as its argument
     os.system(f"streamlit run --server.port {config['STREAMLIT_APP_PORT']} {STREAMLIT_APP_PATH} -- {absolute_csv_file_path}")
     ### End streamlit dashboard 
