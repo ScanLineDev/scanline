@@ -6,7 +6,7 @@ import logging
 import pandas as pd
 
 from reviewme.ailinter.helpers import create_openai_chat_completion, create_simple_openai_chat_completion, load_config
-from reviewme.ailinter.format_results import organize_feedback_items, format_feedback_for_print, get_files_to_review, get_okay_files, PRIORITY_MAP, LIST_OF_ERROR_CATEGORIES
+from reviewme.ailinter.format_results import organize_feedback_items, format_feedback_for_print, get_files_to_review, get_okay_files, PRIORITY_MAP, LIST_OF_ERROR_CATEGORIES, DESCRIPTIONS_OF_ERROR_CATEGORIES
 
 ###########
 logging.getLogger(__name__)
@@ -46,6 +46,9 @@ SAVED_REVIEWS_DIR=config['SAVED_REVIEWS_DIR']
 def read_py_files(file_paths):
     file_contents = {}
     for file_path in file_paths:
+        if not file_path.endswith('.py'):
+            continue
+
         with open(file_path, 'r') as f:
             file_contents[file_path] = f.read()
     return file_contents
@@ -69,20 +72,31 @@ def check_and_append_local_imports(code, file_paths):
 ## LLM call and Prompt 
 ############################
 
-LIST_OF_PRIORITY_GUIDELINES = """High Priority:
-Issues that pose immediate security risks, cause data loss, or critically break functionality.
-Problems that have a direct and substantial impact on business revenue.
-Must-have features or issues that are absolutely essential for a release.
+# LIST_OF_PRIORITY_GUIDELINES = """High Priority:
+# Issues that pose immediate security risks, cause data loss, or critically break functionality.
+# Problems that have a direct and substantial impact on business revenue.
+# Must-have features or issues that are absolutely essential for a release.
 
-Medium Priority:
-Performance issues that degrade user experience but don't cripple the system.
-Important but non-critical features, and moderate user-experience concerns.
-Issues impacting internal tools and operations but not directly affecting customers.
+# Medium Priority:
+# Performance issues that degrade user experience but don't cripple the system.
+# Important but non-critical features, and moderate user-experience concerns.
+# Issues impacting internal tools and operations but not directly affecting customers.
 
-Low Priority:
-Nice-to-have features and minor UI/UX issues that don't affect core functionality.
-Tech debt items that are important long-term but not urgent.
-Issues identified as non-essential for the current release cycle or having low overall impact.
+# Low Priority:
+# Nice-to-have features and minor UI/UX issues that don't affect core functionality.
+# Tech debt items that are important long-term but not urgent.
+# Issues identified as non-essential for the current release cycle or having low overall impact.
+# """
+
+LIST_OF_PRIORITY_GUIDELINES = """🔴 High: 
+    This priority is assigned to code issues that have a critical impact on the program's functionality, performance, or security. These issues can cause system crashes, data loss, or security breaches, and should be addressed immediately to prevent severe consequences.
+
+    🟠 Medium: 
+    This priority is given to code issues that may not immediately affect the program's functionality but could potentially lead to bigger problems in the future or make the code harder to maintain.
+    Performance issues that degrade user experience but don't cripple the system.
+
+    🟡 Low:
+    This priority is assigned to minor issues that don't significantly affect the program's functionality or performance, such as style inconsistencies or lack of comments, and can be addressed at a later time.
 """
 
 FEEDBACK_ITEM_FORMAT_TEMPLATE = """
@@ -91,19 +105,21 @@ FEEDBACK_ITEM_FORMAT_TEMPLATE = """
     Fix: <a short one-sentence suggested fix >
     """
 # format the imported dict to use inside of another f-string 
-LIST_OF_ERROR_CATEGORIES_STRING = ("\n" + "\n".join([f"- {emoji} {name}" for emoji, name in LIST_OF_ERROR_CATEGORIES.items()]))
+DESCRIPTIONS_OF_ERROR_CATEGORIES_STRING = ("\n" + "\n".join([f"- {emoji} {name}" for emoji, name in DESCRIPTIONS_OF_ERROR_CATEGORIES.items()]))
 
 AILINTER_INSTRUCTIONS=f"""
     Your purpose is to serve as an experienced developer and to provide a thorough review of git diffs of the code
     and generate code snippets to address key ERROR CATEGORIES such as:
-    {LIST_OF_ERROR_CATEGORIES_STRING}
+    {DESCRIPTIONS_OF_ERROR_CATEGORIES_STRING}
 
-    Do not comment on minor code style issues, missing
-    comments/documentation. Identify and resolve significant
-    concerns while deliberately disregarding minor issues.
+    You'll be given the git diffs, and next the full content of the original file before the edits.
+
+    Please read through the code line by line to deeply understand it, take your tie, and look carefully for what can be improved
+    Identify and resolve significant concerns 
+    Make sure before claiming an issue that you've also looked at the full content of the original file so you have full context
 
     Make sure to review the code in the context of the programming language standards and best practices.
-
+    
     - Create a "PRIORITY" for each issue, with values of one of the following: {list(PRIORITY_MAP.values())}. Assign the priority score according to these guidelines: 
 
     {LIST_OF_PRIORITY_GUIDELINES}
@@ -130,10 +146,10 @@ def get_completion_prompt (code):
     completion_prompt = f"{AILINTER_INSTRUCTIONS} \n\n === RULE GUIDE: === {RULE_GUIDE_MD} \n\n === CODE TO REVIEW === ```\n {code} \n```"
     return completion_prompt
 
-def get_chat_completion_messages_for_review(code):
+def get_chat_completion_messages_for_review(code, full_file_content):
     chat_messsages = [
-                    {"role": "system", "content": f"{AILINTER_INSTRUCTIONS} \n\n === RULE GUIDE: === \n{RULE_GUIDE_MD} \n\n"},
-                    {"role": "user", "content": f"=== CODE TO REVIEW === ```\n{code} \n```"}
+                    {"role": "system", "content": f"{AILINTER_INSTRUCTIONS} \n\n === RULE GUIDE: === \n{RULE_GUIDE_MD} \n\n === FULL FILE CONTENT BEFORE CHANGES FOR REFERENCE=== \n{full_file_content} \n"},
+                    {"role": "user", "content": f"=== CODE TO REVIEW === ```\n{code}\n```"},
                 ]
     return chat_messsages
 
@@ -174,13 +190,17 @@ def get_final_organized_feedback(feedback_list):
 ## Main 
 ############################
 
-def review_code(code):
+def review_code(code, full_file_content):
     llm_response = create_openai_chat_completion(
-        messages = get_chat_completion_messages_for_review(code), 
+        messages = get_chat_completion_messages_for_review(code, full_file_content),
         model = "gpt-4",
     ) 
 
     return llm_response
+
+def read_file(file_path):
+    with open(file_path, 'r') as f:
+        return f.read()
 
 def run(scope, onlyReviewThisFile): 
     # Get all .py files in this directory and subdirectories
@@ -190,10 +210,10 @@ def run(scope, onlyReviewThisFile):
     for root, dirs, files in os.walk("."):
         dirs[:] = [d for d in dirs if d not in excluded_dirs]
         for file in files:
-            if file.endswith(".py") and file != "__init__.py":
-                full_file_path = os.path.join(root, file)
-                file_paths.append(full_file_path)
+            full_file_path = os.path.join(root, file)
+            file_paths.append(full_file_path)
 
+    print(file_paths)
 
     # Get all .py files in this directory and subdirectories that changed on this git branch compared to master
     # file_paths_changed = get_files_changed()
@@ -248,10 +268,11 @@ def run(scope, onlyReviewThisFile):
 
             # Append imported local modules' code to the existing code
             current_code_to_review = check_and_append_local_imports(content, file_paths)
+            full_file_content = read_file(file_path)
             
             import time
             time.sleep(0.25)
-            futures.append(executor.submit(review_code, current_code_to_review))
+            futures.append(executor.submit(review_code, current_code_to_review, full_file_content))
 
         # Wait for all the jobs to complete
         for future in futures:
