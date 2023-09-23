@@ -152,8 +152,13 @@ print ("csv_file_path: ", csv_file_path)
 # Load the CSV file into a DataFrame
 df = load_data(csv_file_path)
 
-# Display the DataFrame
-display_dataframe(df)
+# check if df is empty 
+if df.empty:
+    st.write("No feedback items to display")
+else: 
+    # Display the DataFrame
+    display_dataframe(df)
+
 
 
 ################################
