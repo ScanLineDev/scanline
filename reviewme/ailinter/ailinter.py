@@ -324,20 +324,26 @@ def run(scope, onlyReviewThisFile):
 
     ############################
     ### Save this review for record-keeping and display
+    ### Saves the organized feedback results into a local folder. This can be referenced and updated later, in terminal or the streamlit app 
     ############################
-    # Save the resulting organized_feedback_dict to a csv
+    # Format the dataframe 
     now = datetime.now().strftime("%Y%m%d-%H%M%S")
     script_dir = os.path.dirname(os.path.abspath(__file__))
+
     absolute_csv_file_path = os.path.join(script_dir, SAVED_REVIEWS_DIR, f"organized_feedback_dict_{now}.csv")
     print ("Absolute filepath for saved_review csv: ", absolute_csv_file_path)
     
-    # Save the organized feedback results into a local folder. This can be referenced and updated later, in terminal or the streamlit app 
     organized_feedback_df = pd.DataFrame(organized_feedback_dict)
     # Add the emoji and error category name for each error category
     organized_feedback_df['error_category'] = organized_feedback_df['error_category'].apply(lambda x: f"{x} {LIST_OF_ERROR_CATEGORIES[x]}")
     organized_feedback_df = organized_feedback_df[['error_category', 'priority_score', 'filepath', 'function_name', 'line_number', 'fail', 'fix']] #re-order the columns 
     organized_feedback_df.columns = ['Error Category', 'Priority', 'Filepath', 'Function Name', 'Line Number', 'Fail', 'Fix']  # re-name the columns
-    # save this round of review for record-keeping and display 
+    # re-order the rows by priority. first high, then medium, then low 
+    priority_order = ["🔴 High", "🟠 Medium", "🟡 Low"]
+    organized_feedback_df['Priority'] = pd.Categorical(organized_feedback_df['Priority'], categories=priority_order, ordered=True)
+    organized_feedback_df = organized_feedback_df.sort_values('Priority')
+
+    # save to CSV 
     organized_feedback_df.to_csv(absolute_csv_file_path, index=False)
 
     print (f"\n\n=== ✅ Saved this review to {absolute_csv_file_path} ===\n")
