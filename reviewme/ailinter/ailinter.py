@@ -56,6 +56,7 @@ def read_py_files(file_paths):
             file_contents[file_path] = f.read()
     return file_contents
 
+
 # Check for local imports in the code and append the imported code
 def check_and_append_local_imports(code, file_paths):
     lines = code.split('\n')
