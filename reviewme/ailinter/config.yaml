@@ -2,6 +2,6 @@ RULE_GUIDE: "human_guide_1.md"
 DEFAULT_TEMPERATURE: 0.2
 SUPPORTED_FILETYPES: [".py", ".js", ".ts"]
 MAX_RESULTS_PER_CATEGORY_TYPE: 3
-SAVED_REVIEWS_DIR: "reviewme/ailinter/saved_reviews"
+SAVED_REVIEWS_DIR: "saved_reviews"
 STREAMLIT_APP_PATH: "reviewme/ailinter/streamlit/streamlit_app.py"
 STREAMLIT_APP_PORT: 4321
