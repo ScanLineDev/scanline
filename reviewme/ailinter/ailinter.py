@@ -42,6 +42,9 @@ print (f"Supported filetypes: {SUPPORTED_FILETYPES}")
 def read_py_files(file_paths):
     file_contents = {}
     for file_path in file_paths:
+        if not file_path.endswith('.py'):
+            continue
+
         with open(file_path, 'r') as f:
             file_contents[file_path] = f.read()
     return file_contents
