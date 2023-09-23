@@ -8,8 +8,12 @@ It'll provide feedback in areas like security, performance, race conditions, con
 This is the V0 release so it may be buggy & design can change suddenly. 
 ## Install
 - Install the latest release of the CLI tool
-`curl -sSL https://github.com/scottfits/aicli/releases/download/v0.3/install.sh | bash`
+```bash
+curl -sSL https://github.com/ScanLineDev/scanline/releases/download/v0.1/install.sh | bash
+```
 - Set a local `.env` file with your `OPENAI_API_KEY`, or `export OPENAI_API_KEY=xxx`
+
+
 
 ## Usage
 ```bash
