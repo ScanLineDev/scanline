@@ -1,4 +1,4 @@
-# AI Linter (Alpha)
+# ScanLine (Alpha)
 
 This tool reviews your code using GPT4 and points out ways to impove it, like having an experienced code reviewer on your team. This should not replace you doing good code review, it is meant to assist! 
 
