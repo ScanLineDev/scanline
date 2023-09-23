@@ -31,12 +31,18 @@ def load_rule_guide(config):
     with open(rule_guide_path, 'r') as f:
         return f.read()
 
+############################
+## Set up based on config 
+############################
+
 config = load_config()
 RULE_GUIDE_MD = load_rule_guide(config)
 
 SAVED_REVIEWS_DIR=config['SAVED_REVIEWS_DIR']
-# Create the directory if it doesn't exist
-os.makedirs(SAVED_REVIEWS_DIR, exist_ok=True)
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+# Create the folder, in the local directory, if it doesn't exist already
+os.makedirs(os.path.join(script_dir, SAVED_REVIEWS_DIR), exist_ok=True)
 
 ############################
 ## Load all code in the directory 
