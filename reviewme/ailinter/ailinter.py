@@ -38,10 +38,6 @@ def load_rule_guide(config):
 config = load_config()
 RULE_GUIDE_MD = load_rule_guide(config)
 
-SUPPORTED_FILETYPES = config['SUPPORTED_FILETYPES']
-print (f"Supported filetypes: {SUPPORTED_FILETYPES}")
-
-### Set up the saved_reviews folder 
 SAVED_REVIEWS_DIR=config['SAVED_REVIEWS_DIR']
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -229,6 +225,13 @@ def run(scope, onlyReviewThisFile):
             diffs = get_file_diffs(file_paths_changed, "main")
         except Exception as e:
             pass
+    elif scope == "repo":
+        file_paths_changed = []
+        diffs = {}
+        file_contents = read_py_files(file_paths)
+        for file_path, diff in file_contents.items():
+            file_paths_changed.append(file_path)
+            diffs[file_path] = diff
         
     # Define the maximum concurrency
     from concurrent.futures import ThreadPoolExecutor
