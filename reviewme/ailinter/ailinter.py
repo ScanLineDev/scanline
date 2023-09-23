@@ -154,7 +154,6 @@ def get_chat_completion_messages_for_review(code, full_file_content):
 def get_files_changed(target):
     # Get list of all files that changed on this git branch compared to main
     file_paths_changed = os.popen("git diff --name-only {0}".format(target)).read().split("\n")
-
     # add . prefix to all files
     result = []
     for file_path in file_paths_changed:
