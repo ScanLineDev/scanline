@@ -34,9 +34,6 @@ def load_rule_guide(config):
 config = load_config()
 RULE_GUIDE_MD = load_rule_guide(config)
 
-SUPPORTED_FILETYPES = config['SUPPORTED_FILETYPES']
-print (f"Supported filetypes: {SUPPORTED_FILETYPES}")
-
 SAVED_REVIEWS_DIR=config['SAVED_REVIEWS_DIR']
 # Create the directory if it doesn't exist
 os.makedirs(SAVED_REVIEWS_DIR, exist_ok=True)
