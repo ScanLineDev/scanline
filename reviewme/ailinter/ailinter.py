@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from pprint import pprint 
 import logging 
 import pandas as pd
+import argparse
 
 from reviewme.ailinter.helpers import create_openai_chat_completion, create_simple_openai_chat_completion, load_config
 from reviewme.ailinter.format_results import organize_feedback_items, format_feedback_for_print, get_files_to_review, get_okay_files, PRIORITY_MAP, LIST_OF_ERROR_CATEGORIES, DESCRIPTIONS_OF_ERROR_CATEGORIES
@@ -37,6 +38,8 @@ SUPPORTED_FILETYPES = config['SUPPORTED_FILETYPES']
 print (f"Supported filetypes: {SUPPORTED_FILETYPES}")
 
 SAVED_REVIEWS_DIR=config['SAVED_REVIEWS_DIR']
+# Create the directory if it doesn't exist
+os.makedirs(SAVED_REVIEWS_DIR, exist_ok=True)
 
 ############################
 ## Load all code in the directory 
@@ -335,8 +338,7 @@ def run(scope, onlyReviewThisFile):
     ############################
     # Run the streamlit app: Port and app filepath are loaded from config. the current Review's csv file path is passed as its argument
     os.system(f"streamlit run --server.port {config['STREAMLIT_APP_PORT']} {config['STREAMLIT_APP_PATH']} -- {absolute_csv_file_path}")
-
-    ### END TEST STREAMLIT DASHBOARD 
+    ### END STREAMLIT DASHBOARD 
 
 if __name__ == "__main__":
     run("commit", "")

@@ -145,20 +145,17 @@ def display_dataframe(df):
 ################################
 ## MAIN
 ################################
-# sys.argv[1] will contain the file path
+# sys.argv[1] will contain the file path, as passed in from the os.system call from ailinter.py:run()
 csv_file_path = sys.argv[1]
-print ("csv_file_path: ", csv_file_path)
-
-# Load the CSV file into a DataFrame
+# print ("csv_file_path: ", csv_file_path)
 df = load_data(csv_file_path)
 
 # check if df is empty 
-if df.empty:
+if df.empty or df is None:
     st.write("No feedback items to display")
 else: 
     # Display the DataFrame
     display_dataframe(df)
-
 
 
 ################################
