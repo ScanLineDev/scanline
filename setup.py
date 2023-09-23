@@ -7,13 +7,13 @@ this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
 setup(
-    name='reviewme',
+    name='scanline',
     packages=['reviewme'],
     py_modules=["cli"],
     version='0.0.1',
     license='Apache License 2.0',
     # Give a short description about your library
-    description='Reviewme',
+    description='scanline',
     long_description=long_description,
     long_description_content_type='text/markdown',
     author='Kyle Morris',

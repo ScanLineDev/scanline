@@ -14,20 +14,20 @@ This is the V0 release so it may be buggy & design can change suddenly.
 ## Usage
 ```bash
 # see all available commands
-reviewme --help 
+scan --help 
 
 # examples
 # check all diffed changed on your current branch compared to main or master
-reviewme run 
+scan
 
 # or only review uncommited changes on the current branch 
-reviewme run --scope commit
+scan run --scope commit
 
 # or review all the code in the whole repo
-reviewme run --scope repo
+scan run --scope repo
 
 # in addition you can specify a single file. For example here's how to see the changes to the file foo.py across only this last commit
-reviewme run --scope repo --file ./path/to/foo.py
+scan run --scope repo --file ./path/to/foo.py
 
 ```
 
