@@ -1,7 +1,10 @@
+from datetime import datetime
 import os, sys
 from dotenv import load_dotenv
 from pprint import pprint 
 import logging 
+import pandas as pd
+import argparse
 
 from reviewme.ailinter.helpers import create_openai_chat_completion, create_simple_openai_chat_completion, load_config
 from reviewme.ailinter.format_results import organize_feedback_items, format_feedback_for_print, get_files_to_review, get_okay_files, PRIORITY_MAP, LIST_OF_ERROR_CATEGORIES, DESCRIPTIONS_OF_ERROR_CATEGORIES
@@ -28,11 +31,18 @@ def load_rule_guide(config):
     with open(rule_guide_path, 'r') as f:
         return f.read()
 
+############################
+## Set up based on config 
+############################
+
 config = load_config()
 RULE_GUIDE_MD = load_rule_guide(config)
 
-SUPPORTED_FILETYPES = config['SUPPORTED_FILETYPES']
-print (f"Supported filetypes: {SUPPORTED_FILETYPES}")
+SAVED_REVIEWS_DIR=config['SAVED_REVIEWS_DIR']
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+# Create the folder, in the local directory, if it doesn't exist already
+os.makedirs(os.path.join(script_dir, SAVED_REVIEWS_DIR), exist_ok=True)
 
 ############################
 ## Load all code in the directory 
@@ -48,6 +58,7 @@ def read_py_files(file_paths):
         with open(file_path, 'r') as f:
             file_contents[file_path] = f.read()
     return file_contents
+
 
 # Check for local imports in the code and append the imported code
 def check_and_append_local_imports(code, file_paths):
@@ -67,22 +78,6 @@ def check_and_append_local_imports(code, file_paths):
 ############################
 ## LLM call and Prompt 
 ############################
-
-# LIST_OF_PRIORITY_GUIDELINES = """High Priority:
-# Issues that pose immediate security risks, cause data loss, or critically break functionality.
-# Problems that have a direct and substantial impact on business revenue.
-# Must-have features or issues that are absolutely essential for a release.
-
-# Medium Priority:
-# Performance issues that degrade user experience but don't cripple the system.
-# Important but non-critical features, and moderate user-experience concerns.
-# Issues impacting internal tools and operations but not directly affecting customers.
-
-# Low Priority:
-# Nice-to-have features and minor UI/UX issues that don't affect core functionality.
-# Tech debt items that are important long-term but not urgent.
-# Issues identified as non-essential for the current release cycle or having low overall impact.
-# """
 
 LIST_OF_PRIORITY_GUIDELINES = """🔴 High: 
     This priority is assigned to code issues that have a critical impact on the program's functionality, performance, or security. These issues can cause system crashes, data loss, or security breaches, and should be addressed immediately to prevent severe consequences.
@@ -110,14 +105,14 @@ AILINTER_INSTRUCTIONS=f"""
 
     You'll be given the git diffs, and next the full content of the original file before the edits.
 
-    Please read throughthe code line by line to deeply understand it, take your tie, and look carefully for what can be improved
+    Please read through the code line by line to deeply understand it, take your tie, and look carefully for what can be improved
     Identify and resolve significant concerns 
     Make sure before claiming an issue that you've also looked at the full content of the original file so you have full context
 
     Make sure to review the code in the context of the programming language standards and best practices.
     
     - Create a "PRIORITY" for each issue, with values of one of the following: {list(PRIORITY_MAP.values())}. Assign the priority score according to these guidelines: 
-    
+
     {LIST_OF_PRIORITY_GUIDELINES}
 
     - Mention the exact line number of the issue in the feedback item if possible
@@ -162,7 +157,6 @@ def get_chat_completion_messages_for_review(code, full_file_content):
 def get_files_changed(target):
     # Get list of all files that changed on this git branch compared to main
     file_paths_changed = os.popen("git diff --name-only {0}".format(target)).read().split("\n")
-
     # add . prefix to all files
     result = []
     for file_path in file_paths_changed:
@@ -231,6 +225,13 @@ def run(scope, onlyReviewThisFile):
             diffs = get_file_diffs(file_paths_changed, "main")
         except Exception as e:
             pass
+    elif scope == "repo":
+        file_paths_changed = []
+        diffs = {}
+        file_contents = read_py_files(file_paths)
+        for file_path, diff in file_contents.items():
+            file_paths_changed.append(file_path)
+            diffs[file_path] = diff
         
     # Define the maximum concurrency
     from concurrent.futures import ThreadPoolExecutor
@@ -276,6 +277,10 @@ def run(scope, onlyReviewThisFile):
 
             feedback_list.append(llm_response)
 
+    if feedback_list == [] or feedback_list == None:
+        print ("\n\n=== No feedback found. Ending reviewme program. ===\n")
+        return
+
     # get the organized *dictionary* of feedback items
     organized_feedback_dict = organize_feedback_items(feedback_list)
 
@@ -300,6 +305,40 @@ def run(scope, onlyReviewThisFile):
         #     with open(file_path, 'w') as f:
         #         f.write(llm_response)
     print ("\n\n=== Done. ===\nSee above for code review. \nNow running the rest of your code...\n")
+
+    ############################
+    ### Save this review for record-keeping and display
+    ### Saves the organized feedback results into a local folder. This can be referenced and updated later, in terminal or the streamlit app 
+    ############################
+    # Format the dataframe 
+    now = datetime.now().strftime("%Y%m%d-%H%M%S")
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    absolute_csv_file_path = os.path.join(script_dir, SAVED_REVIEWS_DIR, f"organized_feedback_dict_{now}.csv")
+    print ("Absolute filepath for saved_review csv: ", absolute_csv_file_path)
+    
+    organized_feedback_df = pd.DataFrame(organized_feedback_dict)
+    # Add the emoji and error category name for each error category
+    organized_feedback_df['error_category'] = organized_feedback_df['error_category'].apply(lambda x: f"{x} {LIST_OF_ERROR_CATEGORIES[x]}")
+    organized_feedback_df = organized_feedback_df[['error_category', 'priority_score', 'filepath', 'function_name', 'line_number', 'fail', 'fix']] #re-order the columns 
+    organized_feedback_df.columns = ['Error Category', 'Priority', 'Filepath', 'Function Name', 'Line Number', 'Fail', 'Fix']  # re-name the columns
+    # re-order the rows by priority. first high, then medium, then low 
+    priority_order = ["🔴 High", "🟠 Medium", "🟡 Low"]
+    organized_feedback_df['Priority'] = pd.Categorical(organized_feedback_df['Priority'], categories=priority_order, ordered=True)
+    organized_feedback_df = organized_feedback_df.sort_values('Priority')
+
+    # save to CSV 
+    organized_feedback_df.to_csv(absolute_csv_file_path, index=False)
+
+    print (f"\n\n=== ✅ Saved this review to {absolute_csv_file_path} ===\n")
+    ############################
+    ### RUN STREAMLIT DASHBOARD 
+    ############################
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    STREAMLIT_APP_PATH = os.path.join(script_dir, config['STREAMLIT_LOCAL_PATH'])
+    # Run the streamlit app: Port and app filepath are loaded from config. The current Review's csv filepath is passed as its argument
+    os.system(f"streamlit run --server.port {config['STREAMLIT_APP_PORT']} {STREAMLIT_APP_PATH} -- {absolute_csv_file_path}")
+    ### End streamlit dashboard 
 
 if __name__ == "__main__":
     run("commit", "")

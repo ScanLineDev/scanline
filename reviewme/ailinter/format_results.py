@@ -9,9 +9,9 @@ MAX_RESULTS_PER_CATEGORY_TYPE = config["MAX_RESULTS_PER_CATEGORY_TYPE"]
 # Constants
 LIST_OF_ERROR_CATEGORIES = {
     "💡": "Logic Issues",
+    "🏁": "Data Race Issues",
     "🔒": "Security Issues",
     "🚀": "Performance Issues",
-    "🏁": "Data Race Issues",
     "☑️": "Consistency Issues",
     "🧪": "Testability Issues",
     "🧩": "Modularity Issues",
@@ -131,6 +131,7 @@ def get_files_to_review(organized_feedback):
 
 # 2. Creating the okay_file_list
 def get_okay_files(directory_path, files_to_review_list):
+    excluded_dirs = ["bin", "lib", "include", "env"]
     okay_file_list = []
     
     # Use os.walk to get all files in the directory
@@ -138,6 +139,7 @@ def get_okay_files(directory_path, files_to_review_list):
         for filename in filenames:
             full_filepath = os.path.join(dirpath, filename)
             if full_filepath not in files_to_review_list and full_filepath.endswith(".py"):
-                okay_file_list.append(full_filepath)
+                if not any([excluded_dir in full_filepath for excluded_dir in excluded_dirs]):
+                    okay_file_list.append(full_filepath)
                 
     return okay_file_list
