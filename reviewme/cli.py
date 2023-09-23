@@ -3,7 +3,7 @@ from reviewme.ailinter import ailinter
 import click
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 @click.group()
 def cli():
