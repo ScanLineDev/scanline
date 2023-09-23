@@ -10,3 +10,6 @@ pyvenv.cfg
 *.pyc
 __pycache__
 reviewme.egg-info/
+reviewme/ailinter/saved_reviews/
+reviewme/ailinter/streamlit/streamlit_app_super.py
+reviewme/ailinter/streamlit/table.html
