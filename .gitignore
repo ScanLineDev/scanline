@@ -3,6 +3,7 @@ ailinter/__pycache__
 bin
 lib
 build
+dist
 share
 *.egg-info
 *.egg
