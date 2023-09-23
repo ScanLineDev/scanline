@@ -130,12 +130,16 @@ def display_dataframe(df):
     </style>
     """
 
+    ### Table Mode 
     # Apply CSS and display DataFrame
     st.markdown(css, unsafe_allow_html=True)
-    # st.dataframe(df, use_container_width=True)  # Use st.dataframe for now instead of st.markdown to make it sortable
+    st.markdown(df.to_html(escape=False, index=False), unsafe_allow_html=True)
 
-    st.dataframe(filter_dataframe(df))
-    # st.dataframe(df)
+    ### DataFrame Mode
+    # Apply CSS and display DataFrame
+    # st.markdown(css, unsafe_allow_html=True)
+    # st.dataframe(df, use_container_width=True)  # Use st.dataframe for now instead of st.markdown to make it sortable
+    # st.dataframe(filter_dataframe(df))
     
 
 ################################
