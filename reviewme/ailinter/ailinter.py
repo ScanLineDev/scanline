@@ -231,13 +231,6 @@ def run(scope, onlyReviewThisFile):
             diffs = get_file_diffs(file_paths_changed, "main")
         except Exception as e:
             pass
-    elif scope == "repo":
-        file_paths_changed = []
-        diffs = {}
-        file_contents = read_py_files(file_paths)
-        for file_path, diff in file_contents.items():
-            file_paths_changed.append(file_path)
-            diffs[file_path] = diff
         
     # Define the maximum concurrency
     from concurrent.futures import ThreadPoolExecutor
@@ -260,6 +253,7 @@ def run(scope, onlyReviewThisFile):
             print(f"\n== Checking {file_path} ==")
 
             if content == "" or content == None:
+                print(f"Skipping {file_path} because it is empty")
                 continue
 
             # Append imported local modules' code to the existing code

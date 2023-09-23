@@ -10,7 +10,7 @@ def cli():
     pass
 
 @click.command()
-@click.option('--scope', default="branch", help='Scope of code review. Can be "commit", "branch", or "repo". Defaults to "branch"')
+@click.option('--scope', default="branch", help='Scope of code review. Can be "commit", "branch". Defaults to "branch"')
 @click.option('--file', default="", help='Select a specific file to review. Defaults to all files in scope.')
 def run(scope, file):
     if file != "":
@@ -24,5 +24,4 @@ def run(scope, file):
 cli.add_command(run)
 
 if __name__ == '__main__':
-    # ailinter.run("branch", "")
-    cli()
+    ailinter.run("repo", "")
