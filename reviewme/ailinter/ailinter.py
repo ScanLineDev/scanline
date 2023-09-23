@@ -1,12 +1,14 @@
 import os, sys
 from dotenv import load_dotenv
-from reviewme.ailinter.helpers import create_openai_chat_completion, create_simple_openai_chat_completion, load_config
 from pprint import pprint 
 import logging 
+
+from reviewme.ailinter.helpers import create_openai_chat_completion, create_simple_openai_chat_completion, load_config
+from reviewme.ailinter.format_results import organize_feedback_items, format_feedback_for_print, get_files_to_review, get_okay_files, PRIORITY_MAP, LIST_OF_ERROR_CATEGORIES, DESCRIPTIONS_OF_ERROR_CATEGORIES
+
+###########
 logging.getLogger(__name__)
-
 load_dotenv()
-
 
 ############################
 ## Load local rule guide 
@@ -28,6 +30,9 @@ def load_rule_guide(config):
 
 config = load_config()
 RULE_GUIDE_MD = load_rule_guide(config)
+
+SUPPORTED_FILETYPES = config['SUPPORTED_FILETYPES']
+print (f"Supported filetypes: {SUPPORTED_FILETYPES}")
 
 ############################
 ## Load all code in the directory 
@@ -60,37 +65,31 @@ def check_and_append_local_imports(code, file_paths):
 ## LLM call and Prompt 
 ############################
 
+# LIST_OF_PRIORITY_GUIDELINES = """High Priority:
+# Issues that pose immediate security risks, cause data loss, or critically break functionality.
+# Problems that have a direct and substantial impact on business revenue.
+# Must-have features or issues that are absolutely essential for a release.
 
-LIST_OF_ERROR_CATEGORIES = """
-    - 💡 Logic
-    - 🔒 Security
-    - 🚀 Performance, reliability, and scalability
-    - 🏁 Data races, race conditions, and deadlocks
-    - ☑️ Consistency
-    - 🧪 Testability 
-    - 🛠️ Maintainability
-    - 🧩 Modularity
-    - 🌀 Complexity
-    - ⚙️ Optimization
-    - 📚 Best practices: DRY, SOLID
-    - ⚠️ Error handling
-    - 👀 Observability: Logging and monitoring
-"""
+# Medium Priority:
+# Performance issues that degrade user experience but don't cripple the system.
+# Important but non-critical features, and moderate user-experience concerns.
+# Issues impacting internal tools and operations but not directly affecting customers.
 
-LIST_OF_PRIORITY_GUIDELINES = """High Priority:
-Issues that pose immediate security risks, cause data loss, or critically break functionality.
-Problems that have a direct and substantial impact on business revenue.
-Must-have features or issues that are absolutely essential for a release.
+# Low Priority:
+# Nice-to-have features and minor UI/UX issues that don't affect core functionality.
+# Tech debt items that are important long-term but not urgent.
+# Issues identified as non-essential for the current release cycle or having low overall impact.
+# """
 
-Medium Priority:
-Performance issues that degrade user experience but don't cripple the system.
-Important but non-critical features, and moderate user-experience concerns.
-Issues impacting internal tools and operations but not directly affecting customers.
+LIST_OF_PRIORITY_GUIDELINES = """🔴 High: 
+    This priority is assigned to code issues that have a critical impact on the program's functionality, performance, or security. These issues can cause system crashes, data loss, or security breaches, and should be addressed immediately to prevent severe consequences.
 
-Low Priority:
-Nice-to-have features and minor UI/UX issues that don't affect core functionality.
-Tech debt items that are important long-term but not urgent.
-Issues identified as non-essential for the current release cycle or having low overall impact.
+    🟠 Medium: 
+    This priority is given to code issues that may not immediately affect the program's functionality but could potentially lead to bigger problems in the future or make the code harder to maintain.
+    Performance issues that degrade user experience but don't cripple the system.
+
+    🟡 Low:
+    This priority is assigned to minor issues that don't significantly affect the program's functionality or performance, such as style inconsistencies or lack of comments, and can be addressed at a later time.
 """
 
 FEEDBACK_ITEM_FORMAT_TEMPLATE = """
@@ -98,11 +97,13 @@ FEEDBACK_ITEM_FORMAT_TEMPLATE = """
     [<PRIORITY_SCORE>] Fail: <a short one-sentence description of the issue >
     Fix: <a short one-sentence suggested fix >
     """
+# format the imported dict to use inside of another f-string 
+DESCRIPTIONS_OF_ERROR_CATEGORIES_STRING = ("\n" + "\n".join([f"- {emoji} {name}" for emoji, name in DESCRIPTIONS_OF_ERROR_CATEGORIES.items()]))
 
 AILINTER_INSTRUCTIONS=f"""
     Your purpose is to serve as an experienced developer and to provide a thorough review of git diffs of the code
     and generate code snippets to address key ERROR CATEGORIES such as:
-    {LIST_OF_ERROR_CATEGORIES}
+    {DESCRIPTIONS_OF_ERROR_CATEGORIES_STRING}
 
     You'll be given the git diffs, and next the full content of the original file before the edits.
 
@@ -110,10 +111,13 @@ AILINTER_INSTRUCTIONS=f"""
     Identify and resolve significant concerns 
     Make sure before claiming an issue that you've also looked at the full content of the original file so you have full context
 
-    Make sure to review the code in the context of the programming language of the files standards and best practices.
-
-    - Create a "PRIORITY" for each issue, with values of: "🔴 High "Priority 🔴", "🟠 Medium Priority 🟠", or "🟡 Low Priority 🟡". Assign the priority score according to these guidelines: 
+    Make sure to review the code in the context of the programming language standards and best practices.
+    
+    - Create a "PRIORITY" for each issue, with values of one of the following: {list(PRIORITY_MAP.values())}. Assign the priority score according to these guidelines: 
+    
     {LIST_OF_PRIORITY_GUIDELINES}
+
+    - Mention the exact line number of the issue in the feedback item if possible
 
     Then: 
     - Assign it an ERROR CATEGORY from the list above.
@@ -126,6 +130,7 @@ AILINTER_INSTRUCTIONS=f"""
 
     """
 
+print ("---- AILINTER INSTRUCTIONS: ----  ", AILINTER_INSTRUCTIONS)
 #########
 ## Construct the prompt 
 #########
@@ -163,107 +168,16 @@ def get_file_diffs(file_paths, target):
     for file_path in file_paths:
             file_diffs[file_path] = os.popen("git diff --unified=0 {0} {1}".format(target, file_path)).read()
             print("git diff --unified=0 {0} {1}".format(target, file_path))
-    print(file_diffs)
+    # print(file_diffs)
     return file_diffs
 
-############################
-## Format Response 
-############################
 
-def get_system_prompt_for_final_summary():
+def get_final_organized_feedback(feedback_list):
 
-    format_feedback_list_prompt = f"""You are an expert programmer doing a code review. You will receive a list of feedback segments for each file. Your job is to 
-    - review the feedback items
-    - cluster all of the feedback items by ERROR CATEGORY 
-    - Within each category, rank-order them by PRIORITY_SCORE, with 0 the highest, then 1, 2, 3, 4, and finally 5
-    - Return the formatted list of feeedback items. 
-    - Make sure there are at most 3 items per each feedback category
-    - Do not mention the same feedback item in multiple categories, just put it in at most 1 category
-    - If you see duplicate feedback items within a file, aggregate them into a single feedback item with a list of the lines it occurs
-    - Mention the exact line number of the issue in the feedback item if possible
+    organized_feedback_items = organize_feedback_items(feedback_list)
+    formatted_feedback = format_feedback_for_print(organized_feedback_items)
 
-    Concretely, each feedback item is formatted like this: 
-    ---
-    {FEEDBACK_ITEM_FORMAT_TEMPLATE}
-    ---
-
-    The FEEDBACK CATEGORIES are:
-    ---
-    {LIST_OF_ERROR_CATEGORIES}
-    ---
-    If there are no feedback items for a category, then do not mention that category. Repeat the filepath, function name, Fail, and Fix *exactly as it occurs in the original feedback item*. Do not add any other content. This is simply formatting and re-ordering the items, not editing or adding more commentary. 
-
-    Here is an example output : 
-    ------
-
-    ========= SECURITY ISSUES =========
-
-    --🔴 High 🔴---
-
-    * script.py:281 some_function 
-    - Fail: <the description of issue>
-    - Fix: <the suggested fix> 
-
-    --🟠 Medium 🟠---
-
-    * otherscript.py:14  some_function 
-    - Fail: <the description of issue>
-    - Fix: <the suggested fix> 
-
-
-    ========= CONSISTENCY ISSUES =========
-    --🟠 Medium 🟠---
-
-    * script.py:420  my_function
-    - Fail: <the description of issue>
-    - Fix: <the suggested fix> 
-
-    --🟡 Low 🟡---
-
-    * otherscript.py:69  some_function
-    - Fail: <the description of issue>
-    - Fix: <the suggested fix> 
-
-    ------
-    """
-
-    return format_feedback_list_prompt
-
-def get_user_prompt_for_final_summary(feedback_list):
-    curr_feedback_items_list = "\n".join(feedback_list)
-
-    format_user_prompt="""
-    Here is the list of feedback items:
-    -------
-    {feedback_items_list}
-    -------
-    """
-    return format_user_prompt.format(feedback_items_list=curr_feedback_items_list)
-
-def get_final_organized_feedback_from_llm(feedback_list):
-    # Organize the feedback by ERROR CATEGORY and PRIORITY_SCORE
-    full_prompt_for_formatted_feedback = get_system_prompt_for_final_summary()
-
-    llm_response = create_simple_openai_chat_completion(
-        system_message = full_prompt_for_formatted_feedback,
-        user_message = get_user_prompt_for_final_summary(feedback_list)
-    )
-
-    # # Call a normal Completion Model 
-    # llm_response = create_openai_chat_completion(
-    #     messages = [
-    #                 {"role": "system", 
-    #                  "content": full_prompt_for_formatted_feedback},
-
-    #                 {"role": "user", 
-    #                  "content": get_user_prompt_for_final_summary(feedback_list)}
-    #     ], 
-    #     model = "gpt-3.5-turbo", 
-    #     temperature = 0.0
-    # ) 
-
-    return llm_response
-
+    return formatted_feedback
 
 ############################
 ## Main 
@@ -299,8 +213,7 @@ def run(scope, onlyReviewThisFile):
     # diffs = get_file_diffs(file_paths_changed)
 
     feedback_list = [] 
-    attention_files_list = [] # files that need attention, i.e. not "Pass"
-    okay_file_list = [] # files that are "Pass"
+
     if scope == "commit":
         file_paths_changed = get_files_changed("HEAD~0")
         diffs = get_file_diffs(file_paths_changed, "HEAD~0")
@@ -363,20 +276,30 @@ def run(scope, onlyReviewThisFile):
 
             feedback_list.append(llm_response)
 
+    # # for testing 
     # print ("\n\n=== 📝 Feedback List ===\n")
     # pprint (feedback_list)
 
-    final_organized_feedback= get_final_organized_feedback_from_llm(feedback_list)
+    # get the organized *dictionary* of feedback items
+    organized_feedback_dict = organize_feedback_items(feedback_list)
 
-    print (f"\n\n=== 💚 Final Organized Feedback 💚===\n{final_organized_feedback}")
+    # get the *pretty print* for them for terminal 
+    final_organized_issues_to_print = format_feedback_for_print(organized_feedback_dict)
 
-    print ("\n\n=== 🔍 Files to review ===\n")
-    print ("\n🔍".join(attention_files_list))
+    # get the list of files *to review*
+    files_to_review_list = get_files_to_review(organized_feedback_dict)
+    okay_file_list = get_okay_files(directory_path=".", files_to_review_list=files_to_review_list)
 
-    print ("\n\n=== ✅ Files that passed ===\n")
-    print ("\n✅".join(okay_file_list))
+    print (f"\n\n=== 💚 Final Organized Feedback 💚===\n{final_organized_issues_to_print}")
+
+    print ("\n\n=== 🔍 Files to review ===")
+    print ("\n🔍 " + "\n🔍 ".join(files_to_review_list))
+
+    ## Add logic to get the files that were examined: either file_contents or file_paths_changed, depending on 'scope' 
+    print ("\n\n=== ✅ Files that passed ===")
+    print ("\n✅ " + "\n✅ ".join(okay_file_list))
     
-    print ("\n\n=== Done. ===\nSee above for code review. \nNow running the rest of your code...\n")
+    # print ("\n\n=== Done. ===\nSee above for code review. \nNow running the rest of your code...\n")
         # if llm_response.strip() != "Pass" and file_path != "ailinter.py":
         #     with open(file_path, 'w') as f:
         #         f.write(llm_response)
