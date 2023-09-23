@@ -102,17 +102,13 @@ FEEDBACK_ITEM_FORMAT_TEMPLATE = """
 AILINTER_INSTRUCTIONS=f"""
     Your purpose is to serve as an experienced developer and to provide a thorough review of git diffs of the code
     and generate code snippets to address key ERROR CATEGORIES such as:
+    {LIST_OF_ERROR_CATEGORIES}
 
     You'll be given the git diffs, and next the full content of the original file before the edits.
 
-
-    You'll review the git diffs and categorize issues you find into the following categories
-    {LIST_OF_ERROR_CATEGORIES}
-
-    Do not comment on minor code style issues, missing
-    comments/documentation. Identify and resolve significant
-    concerns while deliberately disregarding minor issues.
-    make sure before claiming an issue that you've also loooked at the full content of the original file so you have full context
+    Please read throughthe code line by line to deeply understand it, take your tie, and look carefully for what can be improved
+    Identify and resolve significant concerns 
+    Make sure before claiming an issue that you've also looked at the full content of the original file so you have full context
 
     Make sure to review the code in the context of the programming language of the files standards and best practices.
 
@@ -293,9 +289,8 @@ def run(scope, onlyReviewThisFile):
     for root, dirs, files in os.walk("."):
         dirs[:] = [d for d in dirs if d not in excluded_dirs]
         for file in files:
-            if file.endswith(".py") and file != "__init__.py":
-                full_file_path = os.path.join(root, file)
-                file_paths.append(full_file_path)
+            full_file_path = os.path.join(root, file)
+            file_paths.append(full_file_path)
 
     print(file_paths)
 
