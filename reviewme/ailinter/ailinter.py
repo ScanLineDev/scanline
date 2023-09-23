@@ -135,10 +135,16 @@ def get_completion_prompt (code):
     return completion_prompt
 
 def get_chat_completion_messages_for_review(code, full_file_content):
-    chat_messsages = [
+    if full_file_content is not None:
+        chat_messsages = [
                     {"role": "system", "content": f"{AILINTER_INSTRUCTIONS} \n\n === RULE GUIDE: === \n{RULE_GUIDE_MD} \n\n === FULL FILE CONTENT BEFORE CHANGES FOR REFERENCE=== \n{full_file_content} \n"},
                     {"role": "user", "content": f"=== CODE TO REVIEW === ```\n{code}\n```"},
                 ]
+    else:
+        chat_messsages = [
+                        {"role": "system", "content": f"{AILINTER_INSTRUCTIONS} \n\n === RULE GUIDE: === \n{RULE_GUIDE_MD} \n\n \n"},
+                        {"role": "user", "content": f"=== CODE TO REVIEW === ```\n{code}\n```"},
+                    ]
     return chat_messsages
 
 ############################
@@ -201,12 +207,6 @@ def run(scope, onlyReviewThisFile):
             full_file_path = os.path.join(root, file)
             file_paths.append(full_file_path)
 
-    print(file_paths)
-
-    # Get all .py files in this directory and subdirectories that changed on this git branch compared to master
-    # file_paths_changed = get_files_changed()
-    # diffs = get_file_diffs(file_paths_changed)
-
     feedback_list = [] 
 
     if scope == "commit":
@@ -223,13 +223,6 @@ def run(scope, onlyReviewThisFile):
             diffs = get_file_diffs(file_paths_changed, "main")
         except Exception as e:
             pass
-    elif scope == "repo":
-        file_paths_changed = []
-        diffs = {}
-        file_contents = read_py_files(file_paths)
-        for file_path, diff in file_contents.items():
-            file_paths_changed.append(file_path)
-            diffs[file_path] = diff
         
     # Define the maximum concurrency
     from concurrent.futures import ThreadPoolExecutor
@@ -240,27 +233,31 @@ def run(scope, onlyReviewThisFile):
         # Submit the file review completion jobs to the executor
         futures = []
         for file_path in file_paths_changed:
-            if onlyReviewThisFile != "" and onlyReviewThisFile not in file_path:
-                continue
+            try:
+                if onlyReviewThisFile != "" and onlyReviewThisFile not in file_path:
+                    continue
 
-                # check that onlyThisFile is in the file path or else skip 
-            if onlyReviewThisFile != "" and onlyReviewThisFile not in file_path:
-                logging.debug(f"Skipping {file_path} because it does not match onlyReviewThisFile {onlyReviewThisFile}")
-                continue
+                    # check that onlyThisFile is in the file path or else skip 
+                if onlyReviewThisFile != "" and onlyReviewThisFile not in file_path:
+                    logging.debug(f"Skipping {file_path} because it does not match onlyReviewThisFile {onlyReviewThisFile}")
+                    continue
 
-            content = diffs[file_path]
-            print(f"\n== Checking {file_path} ==")
+                content = diffs[file_path]
+                print(f"\n== Checking {file_path} ==")
 
-            if content == "" or content == None:
-                continue
+                if content == "" or content == None:
+                    print(f"Skipping {file_path} because it is empty")
+                    continue
 
-            # Append imported local modules' code to the existing code
-            current_code_to_review = check_and_append_local_imports(content, file_paths)
-            full_file_content = read_file(file_path)
-            
-            import time
-            time.sleep(0.25)
-            futures.append(executor.submit(review_code, current_code_to_review, full_file_content))
+                # Append imported local modules' code to the existing code
+                current_code_to_review = check_and_append_local_imports(content, file_paths)
+                full_file_content = None # read_file(file_path)
+                
+                import time
+                time.sleep(0.25)
+                futures.append(executor.submit(review_code, current_code_to_review, full_file_content))
+            except Exception as e:
+                logging.error(f"Error while reviewing {file_path}: {e}, skipping this file")
 
         # Wait for all the jobs to complete
         for future in futures:
@@ -270,13 +267,6 @@ def run(scope, onlyReviewThisFile):
                 continue
 
             feedback_list.append(llm_response)
-
-    ############################
-    ### Format and display the results 
-    ############################
-    # # for testing 
-    # print ("\n\n=== 📝 Feedback List ===\n")
-    # pprint (feedback_list)
 
     if feedback_list == [] or feedback_list == None:
         print ("\n\n=== No feedback found. Ending reviewme program. ===\n")
@@ -294,12 +284,12 @@ def run(scope, onlyReviewThisFile):
 
     print (f"\n\n=== 💚 Final Organized Feedback 💚===\n{final_organized_issues_to_print}")
 
-    print ("\n\n=== 🔍 Files to review ===")
-    print ("\n🔍 " + "\n🔍 ".join(files_to_review_list))
+    #print ("\n\n=== 🔍 Files to review ===")
+    #print ("\n🔍 " + "\n🔍 ".join(files_to_review_list))
 
     ## Add logic to get the files that were examined: either file_contents or file_paths_changed, depending on 'scope' 
-    print ("\n\n=== ✅ Files that passed ===")
-    print ("\n✅ " + "\n✅ ".join(okay_file_list))
+    # print ("\n\n=== ✅ Files that passed ===")
+    # print ("\n✅ " + "\n✅ ".join(okay_file_list))
     
     # print ("\n\n=== Done. ===\nSee above for code review. \nNow running the rest of your code...\n")
         # if llm_response.strip() != "Pass" and file_path != "ailinter.py":
