@@ -156,7 +156,7 @@ def get_chat_completion_messages_for_review(code, full_file_content):
 
 def get_files_changed(target):
     # Get list of all files that changed on this git branch compared to main
-    file_paths_changed = os.popen("git diff --name-only {0}".format(target)).read().split("\n")
+    file_paths_changed = os.popen("git diff --name-only {0} 2>/dev/null".format(target)).read().split("\n")
     # add . prefix to all files
     result = []
     for file_path in file_paths_changed:
@@ -165,11 +165,12 @@ def get_files_changed(target):
 
     return result
 
+
 def get_file_diffs(file_paths, target):
 
     file_diffs = {}
     for file_path in file_paths:
-            file_diffs[file_path] = os.popen("git diff --unified=0 {0} {1}".format(target, file_path)).read()
+            file_diffs[file_path] = os.popen("git diff --unified=0 {0} {1} 2>/dev/null".format(target, file_path)).read()
             print("git diff --unified=0 {0} {1}".format(target, file_path))
     # print(file_diffs)
     return file_diffs
