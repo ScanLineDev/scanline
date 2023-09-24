@@ -171,7 +171,7 @@ def get_file_diffs(file_paths, target):
     file_diffs = {}
     for file_path in file_paths:
             file_diffs[file_path] = os.popen("git diff --unified=0 {0} {1} 2>/dev/null".format(target, file_path)).read()
-            print("git diff --unified=0 {0} {1}".format(target, file_path))
+            # print("git diff --unified=0 {0} {1}".format(target, file_path))
     # print(file_diffs)
     return file_diffs
 
@@ -313,16 +313,15 @@ def run(scope, onlyReviewThisFile):
     ############################
     # Format the dataframe 
     now = datetime.now().strftime("%Y%m%d-%H%M%S")
-    script_dir = os.path.dirname(os.path.abspath(__file__))
+    SAVED_REVIEWS_DIR = "/var/tmp"
 
-    absolute_csv_file_path = os.path.join(script_dir, SAVED_REVIEWS_DIR, f"organized_feedback_dict_{now}.csv")
-    print ("Absolute filepath for saved_review csv: ", absolute_csv_file_path)
+    absolute_csv_file_path = os.path.join(SAVED_REVIEWS_DIR, f"organized_feedback_dict_{now}.csv")
     
     organized_feedback_df = pd.DataFrame(organized_feedback_dict)
     # Add the emoji and error category name for each error category
     organized_feedback_df['error_category'] = organized_feedback_df['error_category'].apply(lambda x: f"{x} {LIST_OF_ERROR_CATEGORIES[x]}")
     organized_feedback_df = organized_feedback_df[['error_category', 'priority_score', 'filepath', 'function_name', 'line_number', 'fail', 'fix']] #re-order the columns 
-    organized_feedback_df.columns = ['Error Category', 'Priority', 'Filepath', 'Function Name', 'Line Number', 'Fail', 'Fix']  # re-name the columns
+    organized_feedback_df.columns = ['Error Category', 'Priority', 'Filepath', 'Function Name', 'Line Number', 'Issue', 'Suggested Fix']  # re-name the columns
     # re-order the rows by priority. first high, then medium, then low 
     priority_order = ["🔴 High", "🟠 Medium", "🟡 Low"]
     organized_feedback_df['Priority'] = pd.Categorical(organized_feedback_df['Priority'], categories=priority_order, ordered=True)
@@ -338,7 +337,7 @@ def run(scope, onlyReviewThisFile):
     script_dir = os.path.dirname(os.path.abspath(__file__))
     STREAMLIT_APP_PATH = os.path.join(script_dir, config['STREAMLIT_LOCAL_PATH'])
     # Run the streamlit app: Port and app filepath are loaded from config. The current Review's csv filepath is passed as its argument
-    os.system(f"streamlit run --server.port {config['STREAMLIT_APP_PORT']} {STREAMLIT_APP_PATH} -- {absolute_csv_file_path}")
+    os.system(f"streamlit run --server.port {config['STREAMLIT_APP_PORT']} {STREAMLIT_APP_PATH} -- {absolute_csv_file_path} 2>/dev/null")
     ### End streamlit dashboard 
 
 if __name__ == "__main__":

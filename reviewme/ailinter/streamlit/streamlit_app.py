@@ -15,13 +15,13 @@ from pandas.api.types import (
 ########################
 
 st.set_page_config(
-    page_title="AI Feedback Review",
+    page_title="Your Scanline Review is Ready",
     page_icon="💚",
     layout="wide",
     initial_sidebar_state="collapsed", 
 )
 # st.title("💚 AI Feedback Viewer 💚")
-st.markdown("<h1 style='text-align: center;'>💚 AI Feedback Review 💚</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>🧑🏼‍🍳 Your Scanline Review is Ready</h1>", unsafe_allow_html=True)
 
 ################################
 ## DATAFRAME FILTER 
@@ -127,7 +127,6 @@ def display_dataframe(df):
     table.dataframe th {
         text-align: center;
         font-size: 20px;
-        color: #ffffff; 
     }    
     table.dataframe code {
         color: #99ffcc;
@@ -170,7 +169,7 @@ df_others = df[~df.index.isin(df_high.index)]
 if df.empty or df is None:
     st.write("No feedback items to display")
 else: 
-    st.write("### 🔴 Your Top Items")
+    st.write("### 🔴 Your High Priority Items")
     # Display the DataFrame
     display_dataframe(df_high)
     # add some space and a horizontal seperator
