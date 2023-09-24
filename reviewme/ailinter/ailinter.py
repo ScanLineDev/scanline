@@ -278,7 +278,7 @@ def run(scope, onlyReviewThisFile):
             feedback_list.append(llm_response)
 
     if feedback_list == [] or feedback_list == None:
-        print ("\n\n=== No feedback found. Ending reviewme program. ===\n")
+        print ("\n\n=== No feedback found. All done. ===\n")
         return
 
     # get the organized *dictionary* of feedback items
