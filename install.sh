@@ -5,6 +5,7 @@ chmod +x aicli
 echo "🔐 We need your password to install the CLI in the right folder."
 read -s SUDO_PASSWORD
 echo $SUDO_PASSWORD | sudo -S mv aicli /usr/local/bin/scan
+echo -e "\n"
 echo "🗝 Last step - enter your OpenAI API key:"
 read OPENAI_API_KEY
 export OPENAI_API_KEY=$OPENAI_API_KEY

@@ -9,7 +9,7 @@ This is the V0 release so it may be buggy & design can change suddenly.
 ## Install
 - Install the latest release of the CLI tool
 ```bash
-bash -c "$(curl -sSL https://raw.githubusercontent.com/ScanLineDev/scanline/v1.0/install.sh)"
+bash -c "$(curl -sSL https://raw.githubusercontent.com/ScanLineDev/scanline/main/install.sh)"
 ```
 - Set a local `.env` file with your `OPENAI_API_KEY`, or `export OPENAI_API_KEY=xxx`
 
