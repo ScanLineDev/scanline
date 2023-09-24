@@ -7,7 +7,7 @@ logging.basicConfig(level=logging.WARN)
 
 @click.group()
 def cli():
-    pass
+    ailinter.run("branch", "")
 
 @click.command()
 @click.option('--scope', default="branch", help='Scope of code review. Can be "commit", "branch", or "repo". Defaults to "branch"')
