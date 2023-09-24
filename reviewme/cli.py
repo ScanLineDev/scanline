@@ -5,9 +5,11 @@ import logging
 
 logging.basicConfig(level=logging.WARN)
 
-@click.group()
-def cli():
-    ailinter.run("branch", "")
+@click.group(invoke_without_command=True)
+@click.pass_context
+def cli(ctx):
+    if ctx.invoked_subcommand is None:
+        ailinter.run("branch", "")
 
 @click.command()
 @click.option('--scope', default="branch", help='Scope of code review. Can be "commit", "branch", or "repo". Defaults to "branch"')
@@ -24,4 +26,4 @@ def run(scope, file):
 cli.add_command(run)
 
 if __name__ == '__main__':
-    ailinter.run("branch", "")
+    cli()

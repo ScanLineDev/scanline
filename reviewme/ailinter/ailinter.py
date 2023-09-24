@@ -40,9 +40,8 @@ RULE_GUIDE_MD = load_rule_guide(config)
 
 SAVED_REVIEWS_DIR=config['SAVED_REVIEWS_DIR']
 
-script_dir = os.path.dirname(os.path.abspath(__file__))
 # Create the folder, in the local directory, if it doesn't exist already
-os.makedirs(os.path.join(script_dir, SAVED_REVIEWS_DIR), exist_ok=True)
+os.makedirs(SAVED_REVIEWS_DIR, exist_ok=True)
 
 ############################
 ## Load all code in the directory 
@@ -334,8 +333,13 @@ def run(scope, onlyReviewThisFile):
     ############################
     ### RUN STREAMLIT DASHBOARD 
     ############################
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    STREAMLIT_APP_PATH = os.path.join(script_dir, config['STREAMLIT_LOCAL_PATH'])
+    if getattr(sys, 'frozen', False):
+        base_dir = sys._MEIPASS
+    else:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+
+    STREAMLIT_APP_PATH = os.path.join(base_dir, config['STREAMLIT_LOCAL_PATH'])
+
     # Run the streamlit app: Port and app filepath are loaded from config. The current Review's csv filepath is passed as its argument
     os.system(f"streamlit run --server.port {config['STREAMLIT_APP_PORT']} {STREAMLIT_APP_PATH} -- {absolute_csv_file_path} 2>/dev/null")
     ### End streamlit dashboard 
