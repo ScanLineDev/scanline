@@ -1,5 +1,6 @@
 #! /bin/bash
 echo "👋🏼 Welcome to Scanline, so glad you're here!"
+echo "⏳ Downloading requirements...."
 curl -L --progress-bar -o aicli https://github.com/ScanLineDev/scanline/releases/download/v0.1/aicli
 chmod +x aicli
 echo "🔐 We need your password to install the CLI in the right folder."
