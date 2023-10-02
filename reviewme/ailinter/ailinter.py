@@ -268,7 +268,7 @@ def run(scope, onlyReviewThisFile, model):
         except Exception as e:
             logging.error(f"Error while reading {file_path}: {e}")
 
-    if total_chars > 10000:
+    if total_chars > 30000:
         GPT4_PRICING_1k_TOKENS = 0.03
         print("Heads up this change is {0} chars which is fairly large. On GPT4 as of October 2023 this may cost >${1} USD, you sure you want to do this and not either ignore big files or use a cheaper model via the --model flag?".format(total_chars, total_chars/1000*0.03))
         selection = input("Type 'y' to continue 'n' to bail out...")
@@ -384,6 +384,3 @@ def run(scope, onlyReviewThisFile, model):
     # Run the streamlit app: Port and app filepath are loaded from config. The current Review's csv filepath is passed as its argument
     os.system(f"streamlit run --server.port {config['STREAMLIT_APP_PORT']} {STREAMLIT_APP_PATH} -- {absolute_csv_file_path} 2>/dev/null")
     ### End streamlit dashboard 
-
-if __name__ == "__main__":
-    review_code("", "potato")
