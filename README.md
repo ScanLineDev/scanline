@@ -2,6 +2,9 @@
 
 This tool reviews your code using GPT4 and points out ways to impove it, like having an experienced code reviewer on your team. This should not replace you doing good code review, it is meant to assist! 
 
+**Privacy**
+Code is sent to OpenAI directly with your OpenAI key **(your code is only shared with OpenAI, not us)** 
+
 
 It'll provide feedback in areas like security, performance, race conditions, consistency, testability, modularity, complexity, error handling, and optimization
 
@@ -25,13 +28,13 @@ scan --help
 scan
 
 # or only review uncommited changes on the current branch 
-scan run --scope commit
+scan --scope commit
 
 # or review all the code in the whole repo
-scan run --scope repo
+scan --scope repo
 
 # in addition you can specify a single file. For example here's how to see the changes to the file foo.py across only this last commit
-scan run --scope repo --file ./path/to/foo.py
+scan --scope repo --file ./path/to/foo.py
 
 ```
 
