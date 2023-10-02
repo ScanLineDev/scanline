@@ -191,19 +191,40 @@ def get_final_organized_feedback(feedback_list):
 ## Main 
 ############################
 
-def review_code(code, full_file_content):
+def review_code(code, full_file_content, model):
+    import time
+    import random
+
+    delay = 0.1
+    success = False
+    numAttempts = 10
+    attemptsLeft = numAttempts
+    while not success and attemptsLeft > 0:
+        llm_response = create_openai_chat_completion(
+            messages = get_chat_completion_messages_for_review(code, full_file_content),
+            model = model,
+        ) 
+
+        if llm_response is not None and "Rate limit reached" not in llm_response:
+            return llm_response
+
+        print(f"llm_response: {llm_response}")
+        time.sleep(delay)
+        delay *= random.uniform(1.5, 3)
+        attemptsLeft -= 1
+
+    # hail mary try gpt3.5 with 16k context window see if this works!
     llm_response = create_openai_chat_completion(
         messages = get_chat_completion_messages_for_review(code, full_file_content),
-        model = "gpt-4",
-    ) 
-
+        model = "gpt-3.5-turbo-16k",
+    )
     return llm_response
 
 def read_file(file_path):
     with open(file_path, 'r') as f:
         return f.read()
 
-def run(scope, onlyReviewThisFile): 
+def run(scope, onlyReviewThisFile, model): 
     # Get all .py files in this directory and subdirectories
     excluded_dirs = ["bin", "lib", "include", "env"]
     file_paths = []
@@ -242,6 +263,29 @@ def run(scope, onlyReviewThisFile):
     from concurrent.futures import ThreadPoolExecutor
     MAX_CONCURRENCY = 1
 
+    # preliminary scan all files see how big this change is
+    total_chars = 0
+    for file_path in file_paths_changed:
+        try:
+            with open(file_path, 'r') as f:
+                content = f.read()
+                total_chars += len(content)
+        except Exception as e:
+            logging.error(f"Error while reading {file_path}: {e}")
+            
+    GPT4_PRICING_1K_TOKENS = 0.03
+    ESTIMATED_AVG_CHARS_PER_TOKEN = 4
+    numTokens = total_chars/ESTIMATED_AVG_CHARS_PER_TOKEN
+
+    if numTokens > 30000: 
+        print("Heads up this change is roughly {0} tokens which is fairly large. On GPT4 as of October 2023 this may cost >${1} USD, you sure you want to do this and not either ignore big files or use a cheaper model via the --model flag?".format(numTokens, (numTokens/1000) * GPT4_PRICING_1K_TOKENS))
+        selection = input("Type 'y' to continue 'n' to bail out...")
+        while selection != "y" and selection != "n":
+            selection = input("Ehem... Type 'y' to continue 'n' to bail out...")
+        if selection == "n":
+            print("Probably for the best 👍")
+            return
+
     # Create a ThreadPoolExecutor with the maximum concurrency
     with ThreadPoolExecutor(max_workers=MAX_CONCURRENCY) as executor:
         # Submit the file review completion jobs to the executor
@@ -269,7 +313,7 @@ def run(scope, onlyReviewThisFile):
                 
                 import time
                 time.sleep(0.25)
-                futures.append(executor.submit(review_code, current_code_to_review, full_file_content))
+                futures.append(executor.submit(review_code, current_code_to_review, full_file_content, model))
             except Exception as e:
                 logging.error(f"Error while reviewing {file_path}: {e}, skipping this file")
 
@@ -360,6 +404,3 @@ def run(scope, onlyReviewThisFile):
     #streamlit.cli.main_run(filename, args)
     streamlit.web.bootstrap.run(filename,'',args,flag_options = {})
     ### End streamlit dashboard 
-
-if __name__ == "__main__":
-    run("commit", "")
