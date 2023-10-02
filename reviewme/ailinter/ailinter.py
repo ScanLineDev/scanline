@@ -154,12 +154,14 @@ def get_chat_completion_messages_for_review(code, full_file_content):
 ############################
 
 def get_files_changed(target):
+    EXCLUDED_EXTENSIONS = ['.snap', ".pyc"]
     # Get list of all files that changed on this git branch compared to main
     file_paths_changed = os.popen("git diff --name-only {0} 2>/dev/null".format(target)).read().split("\n")
     # add . prefix to all files
     result = []
     for file_path in file_paths_changed:
-        if file_path != "":
+        file_extension = os.path.splitext(file_path)[1]
+        if file_path != "" and file_extension not in EXCLUDED_EXTENSIONS:
             result.append("./" + file_path)
 
     return result
@@ -216,13 +218,13 @@ def run(scope, onlyReviewThisFile):
         diffs = get_file_diffs(file_paths_changed, "HEAD~0")
     elif scope == "branch":
         try:
-            file_paths_changed = get_files_changed("master")
-            diffs = get_file_diffs(file_paths_changed, "master")
+            file_paths_changed = get_files_changed("origin/master")
+            diffs = get_file_diffs(file_paths_changed, "origin/master")
         except Exception as e:
             pass
         try:
-            file_paths_changed = get_files_changed("main")
-            diffs = get_file_diffs(file_paths_changed, "main")
+            file_paths_changed = get_files_changed("origin/main")
+            diffs = get_file_diffs(file_paths_changed, "origin/main")
         except Exception as e:
             pass
     elif scope == "repo":
