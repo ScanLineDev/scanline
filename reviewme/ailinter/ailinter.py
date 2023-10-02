@@ -342,7 +342,7 @@ def run(scope, onlyReviewThisFile):
     STREAMLIT_APP_PATH = os.path.join(base_dir, config['STREAMLIT_LOCAL_PATH'])
 
     # Run the streamlit app: Port and app filepath are loaded from config. The current Review's csv filepath is passed as its argument
-    os.system(f"streamlit run --server.port --global.developmentMode false {config['STREAMLIT_APP_PORT']} {STREAMLIT_APP_PATH} -- {absolute_csv_file_path} 2>/dev/null")
+    os.system(f"streamlit run --server.port {config['STREAMLIT_APP_PORT']} {STREAMLIT_APP_PATH} -- {absolute_csv_file_path} 2>/dev/null")
     ### End streamlit dashboard 
 
 if __name__ == "__main__":
