@@ -186,7 +186,7 @@ def get_final_organized_feedback(feedback_list):
 ## Main 
 ############################
 
-def review_code(code, full_file_content):
+def review_code(code, full_file_content, model):
     import time
     import random
 
@@ -197,7 +197,7 @@ def review_code(code, full_file_content):
     while not success and attemptsLeft > 0:
         llm_response = create_openai_chat_completion(
             messages = get_chat_completion_messages_for_review(code, full_file_content),
-            model = "gpt-4",
+            model = model,
         ) 
 
         if llm_response is not None and "Rate limit reached" not in llm_response:
@@ -208,13 +208,18 @@ def review_code(code, full_file_content):
         delay *= random.uniform(1.5, 3)
         attemptsLeft -= 1
 
-    return "Error reviewing code segment. Did not succeed after {0} attempts.".format(numAttempts)
+    # hail mary try gpt3.5 with 16k context window see if this works!
+    llm_response = create_openai_chat_completion(
+        messages = get_chat_completion_messages_for_review(code, full_file_content),
+        model = "gpt-3.5-turbo-16k",
+    )
+    return llm_response
 
 def read_file(file_path):
     with open(file_path, 'r') as f:
         return f.read()
 
-def run(scope, onlyReviewThisFile): 
+def run(scope, onlyReviewThisFile, model): 
     # Get all .py files in this directory and subdirectories
     excluded_dirs = ["bin", "lib", "include", "env"]
     file_paths = []
@@ -280,7 +285,7 @@ def run(scope, onlyReviewThisFile):
                 
                 import time
                 time.sleep(0.25)
-                futures.append(executor.submit(review_code, current_code_to_review, full_file_content))
+                futures.append(executor.submit(review_code, current_code_to_review, full_file_content, model))
             except Exception as e:
                 logging.error(f"Error while reviewing {file_path}: {e}, skipping this file")
 
