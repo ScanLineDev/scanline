@@ -187,12 +187,28 @@ def get_final_organized_feedback(feedback_list):
 ############################
 
 def review_code(code, full_file_content):
-    llm_response = create_openai_chat_completion(
-        messages = get_chat_completion_messages_for_review(code, full_file_content),
-        model = "gpt-4",
-    ) 
+    import time
+    import random
 
-    return llm_response
+    delay = 0.1
+    success = False
+    numAttempts = 10
+    attemptsLeft = numAttempts
+    while not success and attemptsLeft > 0:
+        llm_response = create_openai_chat_completion(
+            messages = get_chat_completion_messages_for_review(code, full_file_content),
+            model = "gpt-4",
+        ) 
+
+        if llm_response is not None and "Rate limit reached" not in llm_response:
+            return llm_response
+
+        print(f"llm_response: {llm_response}")
+        time.sleep(delay)
+        delay *= random.uniform(1.5, 3)
+        attemptsLeft -= 1
+
+    return "Error reviewing code segment. Did not succeed after {0} attempts.".format(numAttempts)
 
 def read_file(file_path):
     with open(file_path, 'r') as f:
@@ -345,4 +361,4 @@ def run(scope, onlyReviewThisFile):
     ### End streamlit dashboard 
 
 if __name__ == "__main__":
-    run("commit", "")
+    review_code("", "potato")

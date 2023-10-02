@@ -28,4 +28,5 @@ def run(scope, file):
 cli.add_command(run)
 
 if __name__ == '__main__':
-    cli()
+    ailinter.review_code("branch", "")
+    #cli()
