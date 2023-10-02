@@ -9,6 +9,11 @@ import argparse
 from reviewme.ailinter.helpers import create_openai_chat_completion, create_simple_openai_chat_completion, load_config
 from reviewme.ailinter.format_results import organize_feedback_items, format_feedback_for_print, get_files_to_review, get_okay_files, PRIORITY_MAP, LIST_OF_ERROR_CATEGORIES, DESCRIPTIONS_OF_ERROR_CATEGORIES
 
+
+# Suppress the SettingWithCopyWarning
+import warnings
+warnings.filterwarnings("ignore", category=pd.errors.SettingWithCopyWarning)
+
 ###########
 logging.getLogger(__name__)
 load_dotenv()
@@ -361,19 +366,21 @@ def run(scope, onlyReviewThisFile, model):
     absolute_csv_file_path = os.path.join(SAVED_REVIEWS_DIR, f"organized_feedback_dict_{now}.csv")
     
     organized_feedback_df = pd.DataFrame(organized_feedback_dict)
-    # Add the emoji and error category name for each error category
-    organized_feedback_df['error_category'] = organized_feedback_df['error_category'].apply(lambda x: f"{x} {LIST_OF_ERROR_CATEGORIES[x]}")
-    organized_feedback_df = organized_feedback_df[['error_category', 'priority_score', 'filepath', 'function_name', 'line_number', 'fail', 'fix']] #re-order the columns 
-    organized_feedback_df.columns = ['Error Category', 'Priority', 'Filepath', 'Function Name', 'Line Number', 'Issue', 'Suggested Fix']  # re-name the columns
-    # re-order the rows by priority. first high, then medium, then low 
-    priority_order = ["🔴 High", "🟠 Medium", "🟡 Low"]
-    organized_feedback_df['Priority'] = pd.Categorical(organized_feedback_df['Priority'], categories=priority_order, ordered=True)
-    organized_feedback_df = organized_feedback_df.sort_values('Priority')
+    if not organized_feedback_df.empty and organize_feedback_items != None:
+        # Add the emoji and error category name for each error category
+        organized_feedback_df['error_category'] = organized_feedback_df['error_category'].apply(lambda x: f"{x} {LIST_OF_ERROR_CATEGORIES[x]}")
+        organized_feedback_df = organized_feedback_df[['error_category', 'priority_score', 'filepath', 'function_name', 'line_number', 'fail', 'fix']] #re-order the columns 
+        organized_feedback_df.columns = ['Error Category', 'Priority', 'Filepath', 'Function Name', 'Line Number', 'Issue', 'Suggested Fix']  # re-name the columns
+        # re-order the rows by priority. first high, then medium, then low 
+        priority_order = ["🔴 High", "🟠 Medium", "🟡 Low"]
+        organized_feedback_df['Priority'] = pd.Categorical(organized_feedback_df['Priority'], categories=priority_order, ordered=True)
+        organized_feedback_df = organized_feedback_df.sort_values('Priority')
 
     # save to CSV 
     organized_feedback_df.to_csv(absolute_csv_file_path, index=False)
 
     print (f"\n\n=== ✅ Saved this review to {absolute_csv_file_path} ===\n")
+    print ("✅ Code review complete.")
     ############################
     ### RUN STREAMLIT DASHBOARD 
     ############################
@@ -384,6 +391,16 @@ def run(scope, onlyReviewThisFile, model):
 
     STREAMLIT_APP_PATH = os.path.join(base_dir, config['STREAMLIT_LOCAL_PATH'])
 
-    # Run the streamlit app: Port and app filepath are loaded from config. The current Review's csv filepath is passed as its argument
-    os.system(f"streamlit run --server.port {config['STREAMLIT_APP_PORT']} {STREAMLIT_APP_PATH} -- {absolute_csv_file_path} 2>/dev/null")
+    ### New way to call Streamlit 
+    import streamlit.web.bootstrap
+    from streamlit import config as _config
+
+    dirname = os.path.dirname(__file__)
+    filename = os.path.join(dirname, STREAMLIT_APP_PATH)
+
+    _config.set_option("server.port", config['STREAMLIT_APP_PORT'])
+    args = [f"{absolute_csv_file_path}"]
+
+    #streamlit.cli.main_run(filename, args)
+    streamlit.web.bootstrap.run(filename,'',args,flag_options = {})
     ### End streamlit dashboard 

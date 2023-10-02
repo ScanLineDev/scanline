@@ -10,6 +10,10 @@ from pandas.api.types import (
 )
 
 
+# Suppress the SettingWithCopyWarning
+import warnings
+warnings.filterwarnings("ignore", category=pd.errors.SettingWithCopyWarning)
+
 ########################
 ## STREAMLIT CONFIG
 ########################
