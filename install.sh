@@ -10,4 +10,5 @@ echo -e "\n"
 echo "🗝 Last step - enter your OpenAI API key (this is only used locally, we never see this.):"
 read OPENAI_API_KEY
 export OPENAI_API_KEY=$OPENAI_API_KEY
+echo "export OPENAI_API_KEY=$OPENAI_API_KEY" >> ~/.bashrc
 echo "✅ All done here. Run 'scan' on any branch you'd like to review. 🚀"
