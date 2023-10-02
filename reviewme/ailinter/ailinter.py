@@ -187,7 +187,7 @@ def get_file_diffs(file_paths, target):
     file_diffs = {}
     for file_path in file_paths:
             file_diffs[file_path] = os.popen("git diff --unified=0 {0} {1}".format(target, file_path)).read()
-            print("git diff --unified=0 {0} {1}".format(target, file_path))
+            # print("git diff --unified=0 {0} {1}".format(target, file_path))
     # print(file_diffs)
     return file_diffs
 
