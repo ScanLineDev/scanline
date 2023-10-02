@@ -1,4 +1,5 @@
 from datetime import datetime
+import subprocess
 import os, sys
 from dotenv import load_dotenv
 from pprint import pprint 
@@ -158,13 +159,29 @@ def get_chat_completion_messages_for_review(code, full_file_content):
 ## LLM call and Prompt 
 ############################
 
+def get_main_branch_name():
+    # Get the name of the main branch (either main or master)
+    result = subprocess.run(
+        "git ls-remote --heads origin | grep 'refs/heads/main'",
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )
+    if result.stdout:
+        return "main"
+    else:
+        return "master"
+
 def get_files_changed(target):
+    EXCLUDED_EXTENSIONS = ['.snap', ".pyc"]
     # Get list of all files that changed on this git branch compared to main
-    file_paths_changed = os.popen("git diff --name-only {0} 2>/dev/null".format(target)).read().split("\n")
+    file_paths_changed = os.popen("git diff --name-only {0}".format(target)).read().split("\n")
     # add . prefix to all files
     result = []
     for file_path in file_paths_changed:
-        if file_path != "":
+        file_extension = os.path.splitext(file_path)[1]
+        if file_path != "" and file_extension not in EXCLUDED_EXTENSIONS:
             result.append("./" + file_path)
 
     return result
@@ -174,7 +191,7 @@ def get_file_diffs(file_paths, target):
 
     file_diffs = {}
     for file_path in file_paths:
-            file_diffs[file_path] = os.popen("git diff --unified=0 {0} {1} 2>/dev/null".format(target, file_path)).read()
+            file_diffs[file_path] = os.popen("git diff --unified=0 {0} {1}".format(target, file_path)).read()
             # print("git diff --unified=0 {0} {1}".format(target, file_path))
     # print(file_diffs)
     return file_diffs
@@ -241,14 +258,16 @@ def run(scope, onlyReviewThisFile, model):
         file_paths_changed = get_files_changed("HEAD~0")
         diffs = get_file_diffs(file_paths_changed, "HEAD~0")
     elif scope == "branch":
+        main_branch_name = get_main_branch_name()
+        remote_branch_name = f"origin/{main_branch_name}"
         try:
-            file_paths_changed = get_files_changed("master")
-            diffs = get_file_diffs(file_paths_changed, "master")
+            file_paths_changed = get_files_changed(remote_branch_name)
+            diffs = get_file_diffs(file_paths_changed, remote_branch_name)
         except Exception as e:
             pass
         try:
-            file_paths_changed = get_files_changed("main")
-            diffs = get_file_diffs(file_paths_changed, "main")
+            file_paths_changed = get_files_changed(remote_branch_name)
+            diffs = get_file_diffs(file_paths_changed, remote_branch_name)
         except Exception as e:
             pass
     elif scope == "repo":
