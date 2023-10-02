@@ -28,13 +28,13 @@ scan --help
 scan
 
 # or only review uncommited changes on the current branch 
-scan run --scope commit
+scan --scope commit
 
 # or review all the code in the whole repo
-scan run --scope repo
+scan --scope repo
 
 # in addition you can specify a single file. For example here's how to see the changes to the file foo.py across only this last commit
-scan run --scope repo --file ./path/to/foo.py
+scan --scope repo --file ./path/to/foo.py
 
 ```
 
