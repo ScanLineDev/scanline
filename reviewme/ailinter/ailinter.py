@@ -10,6 +10,11 @@ import argparse
 from reviewme.ailinter.helpers import create_openai_chat_completion, create_simple_openai_chat_completion, load_config
 from reviewme.ailinter.format_results import organize_feedback_items, format_feedback_for_print, get_files_to_review, get_okay_files, PRIORITY_MAP, LIST_OF_ERROR_CATEGORIES, DESCRIPTIONS_OF_ERROR_CATEGORIES
 
+
+# Suppress the SettingWithCopyWarning
+import warnings
+warnings.filterwarnings("ignore", category=pd.errors.SettingWithCopyWarning)
+
 ###########
 logging.getLogger(__name__)
 load_dotenv()
@@ -203,19 +208,40 @@ def get_final_organized_feedback(feedback_list):
 ## Main 
 ############################
 
-def review_code(code, full_file_content):
+def review_code(code, full_file_content, model):
+    import time
+    import random
+
+    delay = 0.1
+    success = False
+    numAttempts = 10
+    attemptsLeft = numAttempts
+    while not success and attemptsLeft > 0:
+        llm_response = create_openai_chat_completion(
+            messages = get_chat_completion_messages_for_review(code, full_file_content),
+            model = model,
+        ) 
+
+        if llm_response is not None and "Rate limit reached" not in llm_response:
+            return llm_response
+
+        print(f"llm_response: {llm_response}")
+        time.sleep(delay)
+        delay *= random.uniform(1.5, 3)
+        attemptsLeft -= 1
+
+    # hail mary try gpt3.5 with 16k context window see if this works!
     llm_response = create_openai_chat_completion(
         messages = get_chat_completion_messages_for_review(code, full_file_content),
-        model = "gpt-4",
-    ) 
-
+        model = "gpt-3.5-turbo-16k",
+    )
     return llm_response
 
 def read_file(file_path):
     with open(file_path, 'r') as f:
         return f.read()
 
-def run(scope, onlyReviewThisFile): 
+def run(scope, onlyReviewThisFile, model): 
     # Get all .py files in this directory and subdirectories
     excluded_dirs = ["bin", "lib", "include", "env"]
     file_paths = []
@@ -256,6 +282,29 @@ def run(scope, onlyReviewThisFile):
     from concurrent.futures import ThreadPoolExecutor
     MAX_CONCURRENCY = 1
 
+    # preliminary scan all files see how big this change is
+    total_chars = 0
+    for file_path in file_paths_changed:
+        try:
+            with open(file_path, 'r') as f:
+                content = f.read()
+                total_chars += len(content)
+        except Exception as e:
+            logging.error(f"Error while reading {file_path}: {e}")
+            
+    GPT4_PRICING_1K_TOKENS = 0.03
+    ESTIMATED_AVG_CHARS_PER_TOKEN = 4
+    numTokens = total_chars/ESTIMATED_AVG_CHARS_PER_TOKEN
+
+    if numTokens > 30000: 
+        print("Heads up this change is roughly {0} tokens which is fairly large. On GPT4 as of October 2023 this may cost >${1} USD, you sure you want to do this and not either ignore big files or use a cheaper model via the --model flag?".format(numTokens, (numTokens/1000) * GPT4_PRICING_1K_TOKENS))
+        selection = input("Type 'y' to continue 'n' to bail out...")
+        while selection != "y" and selection != "n":
+            selection = input("Ehem... Type 'y' to continue 'n' to bail out...")
+        if selection == "n":
+            print("Probably for the best 👍")
+            return
+
     # Create a ThreadPoolExecutor with the maximum concurrency
     with ThreadPoolExecutor(max_workers=MAX_CONCURRENCY) as executor:
         # Submit the file review completion jobs to the executor
@@ -283,7 +332,7 @@ def run(scope, onlyReviewThisFile):
                 
                 import time
                 time.sleep(0.25)
-                futures.append(executor.submit(review_code, current_code_to_review, full_file_content))
+                futures.append(executor.submit(review_code, current_code_to_review, full_file_content, model))
             except Exception as e:
                 logging.error(f"Error while reviewing {file_path}: {e}, skipping this file")
 
@@ -336,19 +385,21 @@ def run(scope, onlyReviewThisFile):
     absolute_csv_file_path = os.path.join(SAVED_REVIEWS_DIR, f"organized_feedback_dict_{now}.csv")
     
     organized_feedback_df = pd.DataFrame(organized_feedback_dict)
-    # Add the emoji and error category name for each error category
-    organized_feedback_df['error_category'] = organized_feedback_df['error_category'].apply(lambda x: f"{x} {LIST_OF_ERROR_CATEGORIES[x]}")
-    organized_feedback_df = organized_feedback_df[['error_category', 'priority_score', 'filepath', 'function_name', 'line_number', 'fail', 'fix']] #re-order the columns 
-    organized_feedback_df.columns = ['Error Category', 'Priority', 'Filepath', 'Function Name', 'Line Number', 'Issue', 'Suggested Fix']  # re-name the columns
-    # re-order the rows by priority. first high, then medium, then low 
-    priority_order = ["🔴 High", "🟠 Medium", "🟡 Low"]
-    organized_feedback_df['Priority'] = pd.Categorical(organized_feedback_df['Priority'], categories=priority_order, ordered=True)
-    organized_feedback_df = organized_feedback_df.sort_values('Priority')
+    if not organized_feedback_df.empty and organize_feedback_items != None:
+        # Add the emoji and error category name for each error category
+        organized_feedback_df['error_category'] = organized_feedback_df['error_category'].apply(lambda x: f"{x} {LIST_OF_ERROR_CATEGORIES[x]}")
+        organized_feedback_df = organized_feedback_df[['error_category', 'priority_score', 'filepath', 'function_name', 'line_number', 'fail', 'fix']] #re-order the columns 
+        organized_feedback_df.columns = ['Error Category', 'Priority', 'Filepath', 'Function Name', 'Line Number', 'Issue', 'Suggested Fix']  # re-name the columns
+        # re-order the rows by priority. first high, then medium, then low 
+        priority_order = ["🔴 High", "🟠 Medium", "🟡 Low"]
+        organized_feedback_df['Priority'] = pd.Categorical(organized_feedback_df['Priority'], categories=priority_order, ordered=True)
+        organized_feedback_df = organized_feedback_df.sort_values('Priority')
 
     # save to CSV 
     organized_feedback_df.to_csv(absolute_csv_file_path, index=False)
 
     print (f"\n\n=== ✅ Saved this review to {absolute_csv_file_path} ===\n")
+    print ("✅ Code review complete.")
     ############################
     ### RUN STREAMLIT DASHBOARD 
     ############################
@@ -359,9 +410,16 @@ def run(scope, onlyReviewThisFile):
 
     STREAMLIT_APP_PATH = os.path.join(base_dir, config['STREAMLIT_LOCAL_PATH'])
 
-    # Run the streamlit app: Port and app filepath are loaded from config. The current Review's csv filepath is passed as its argument
-    os.system(f"streamlit run --server.port {config['STREAMLIT_APP_PORT']} {STREAMLIT_APP_PATH} -- {absolute_csv_file_path}")
-    ### End streamlit dashboard 
+    ### New way to call Streamlit 
+    import streamlit.web.bootstrap
+    from streamlit import config as _config
 
-if __name__ == "__main__":
-    run("commit", "")
+    dirname = os.path.dirname(__file__)
+    filename = os.path.join(dirname, STREAMLIT_APP_PATH)
+
+    _config.set_option("server.port", config['STREAMLIT_APP_PORT'])
+    args = [f"{absolute_csv_file_path}"]
+
+    #streamlit.cli.main_run(filename, args)
+    streamlit.web.bootstrap.run(filename,'',args,flag_options = {})
+    ### End streamlit dashboard 
