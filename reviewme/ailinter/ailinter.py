@@ -267,10 +267,13 @@ def run(scope, onlyReviewThisFile, model):
                 total_chars += len(content)
         except Exception as e:
             logging.error(f"Error while reading {file_path}: {e}")
+            
+    GPT4_PRICING_1K_TOKENS = 0.03
+    ESTIMATED_AVG_CHARS_PER_TOKEN = 4
+    numTokens = total_chars/ESTIMATED_AVG_CHARS_PER_TOKEN
 
-    if total_chars > 30000:
-        GPT4_PRICING_1k_TOKENS = 0.03
-        print("Heads up this change is {0} chars which is fairly large. On GPT4 as of October 2023 this may cost >${1} USD, you sure you want to do this and not either ignore big files or use a cheaper model via the --model flag?".format(total_chars, total_chars/1000*0.03))
+    if numTokens > 30000: 
+        print("Heads up this change is roughly {0} tokens which is fairly large. On GPT4 as of October 2023 this may cost >${1} USD, you sure you want to do this and not either ignore big files or use a cheaper model via the --model flag?".format(numTokens, (numTokens/1000) * GPT4_PRICING_1K_TOKENS))
         selection = input("Type 'y' to continue 'n' to bail out...")
         while selection != "y" and selection != "n":
             selection = input("Ehem... Type 'y' to continue 'n' to bail out...")
