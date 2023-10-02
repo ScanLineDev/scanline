@@ -258,6 +258,26 @@ def run(scope, onlyReviewThisFile, model):
     from concurrent.futures import ThreadPoolExecutor
     MAX_CONCURRENCY = 1
 
+    # preliminary scan all files see how big this change is
+    total_chars = 0
+    for file_path in file_paths_changed:
+        try:
+            with open(file_path, 'r') as f:
+                content = f.read()
+                total_chars += len(content)
+        except Exception as e:
+            logging.error(f"Error while reading {file_path}: {e}")
+
+    if total_chars > 10000:
+        GPT4_PRICING_1k_TOKENS = 0.03
+        print("Heads up this change is {0} chars which is fairly large. On GPT4 as of October 2023 this may cost >${1} USD, you sure you want to do this and not either ignore big files or use a cheaper model via the --model flag?".format(total_chars, total_chars/1000*0.03))
+        selection = input("Type 'y' to continue 'n' to bail out...")
+        while selection != "y" and selection != "n":
+            selection = input("Ehem... Type 'y' to continue 'n' to bail out...")
+        if selection == "n":
+            print("Probably for the best 👍")
+            return
+
     # Create a ThreadPoolExecutor with the maximum concurrency
     with ThreadPoolExecutor(max_workers=MAX_CONCURRENCY) as executor:
         # Submit the file review completion jobs to the executor
