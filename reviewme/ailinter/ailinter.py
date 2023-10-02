@@ -317,14 +317,15 @@ def run(scope, onlyReviewThisFile):
     absolute_csv_file_path = os.path.join(SAVED_REVIEWS_DIR, f"organized_feedback_dict_{now}.csv")
     
     organized_feedback_df = pd.DataFrame(organized_feedback_dict)
-    # Add the emoji and error category name for each error category
-    organized_feedback_df['error_category'] = organized_feedback_df['error_category'].apply(lambda x: f"{x} {LIST_OF_ERROR_CATEGORIES[x]}")
-    organized_feedback_df = organized_feedback_df[['error_category', 'priority_score', 'filepath', 'function_name', 'line_number', 'fail', 'fix']] #re-order the columns 
-    organized_feedback_df.columns = ['Error Category', 'Priority', 'Filepath', 'Function Name', 'Line Number', 'Issue', 'Suggested Fix']  # re-name the columns
-    # re-order the rows by priority. first high, then medium, then low 
-    priority_order = ["🔴 High", "🟠 Medium", "🟡 Low"]
-    organized_feedback_df['Priority'] = pd.Categorical(organized_feedback_df['Priority'], categories=priority_order, ordered=True)
-    organized_feedback_df = organized_feedback_df.sort_values('Priority')
+    if not organized_feedback_df.empty and organize_feedback_items != None:
+        # Add the emoji and error category name for each error category
+        organized_feedback_df['error_category'] = organized_feedback_df['error_category'].apply(lambda x: f"{x} {LIST_OF_ERROR_CATEGORIES[x]}")
+        organized_feedback_df = organized_feedback_df[['error_category', 'priority_score', 'filepath', 'function_name', 'line_number', 'fail', 'fix']] #re-order the columns 
+        organized_feedback_df.columns = ['Error Category', 'Priority', 'Filepath', 'Function Name', 'Line Number', 'Issue', 'Suggested Fix']  # re-name the columns
+        # re-order the rows by priority. first high, then medium, then low 
+        priority_order = ["🔴 High", "🟠 Medium", "🟡 Low"]
+        organized_feedback_df['Priority'] = pd.Categorical(organized_feedback_df['Priority'], categories=priority_order, ordered=True)
+        organized_feedback_df = organized_feedback_df.sort_values('Priority')
 
     # save to CSV 
     organized_feedback_df.to_csv(absolute_csv_file_path, index=False)
@@ -341,7 +342,7 @@ def run(scope, onlyReviewThisFile):
     STREAMLIT_APP_PATH = os.path.join(base_dir, config['STREAMLIT_LOCAL_PATH'])
 
     # Run the streamlit app: Port and app filepath are loaded from config. The current Review's csv filepath is passed as its argument
-    os.system(f"streamlit run --server.port {config['STREAMLIT_APP_PORT']} {STREAMLIT_APP_PATH} -- {absolute_csv_file_path} 2>/dev/null")
+    os.system(f"streamlit run --server.port --global.developmentMode false {config['STREAMLIT_APP_PORT']} {STREAMLIT_APP_PATH} -- {absolute_csv_file_path} 2>/dev/null")
     ### End streamlit dashboard 
 
 if __name__ == "__main__":

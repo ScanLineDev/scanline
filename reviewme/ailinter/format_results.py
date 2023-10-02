@@ -91,6 +91,8 @@ def organize_feedback_items(feedback_list):
 
 # Function to format feedback for print
 def format_feedback_for_print(organized_feedback, max_items_per_category=MAX_RESULTS_PER_CATEGORY_TYPE):
+    if not organized_feedback or len(organized_feedback) == 0:
+        return "No feedback items to display."
     # Format the organized feedback
     result = ""
     
