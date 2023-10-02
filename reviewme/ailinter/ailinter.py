@@ -186,6 +186,10 @@ def get_final_organized_feedback(feedback_list):
 ## Main 
 ############################
 
+
+def add_numbers(number1, number2):
+    return number1 * number2
+
 def review_code(code, full_file_content):
     llm_response = create_openai_chat_completion(
         messages = get_chat_completion_messages_for_review(code, full_file_content),
