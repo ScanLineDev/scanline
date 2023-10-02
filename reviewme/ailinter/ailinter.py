@@ -9,6 +9,11 @@ import argparse
 from reviewme.ailinter.helpers import create_openai_chat_completion, create_simple_openai_chat_completion, load_config
 from reviewme.ailinter.format_results import organize_feedback_items, format_feedback_for_print, get_files_to_review, get_okay_files, PRIORITY_MAP, LIST_OF_ERROR_CATEGORIES, DESCRIPTIONS_OF_ERROR_CATEGORIES
 
+
+# Suppress the SettingWithCopyWarning
+import warnings
+warnings.filterwarnings("ignore", category=pd.errors.SettingWithCopyWarning)
+
 ###########
 logging.getLogger(__name__)
 load_dotenv()
@@ -331,6 +336,7 @@ def run(scope, onlyReviewThisFile):
     organized_feedback_df.to_csv(absolute_csv_file_path, index=False)
 
     print (f"\n\n=== ✅ Saved this review to {absolute_csv_file_path} ===\n")
+    print ("✅ Code review complete.")
     ############################
     ### RUN STREAMLIT DASHBOARD 
     ############################
@@ -341,8 +347,18 @@ def run(scope, onlyReviewThisFile):
 
     STREAMLIT_APP_PATH = os.path.join(base_dir, config['STREAMLIT_LOCAL_PATH'])
 
-    # Run the streamlit app: Port and app filepath are loaded from config. The current Review's csv filepath is passed as its argument
-    os.system(f"streamlit run --server.port {config['STREAMLIT_APP_PORT']} {STREAMLIT_APP_PATH} -- {absolute_csv_file_path} 2>/dev/null")
+    ### New way to call Streamlit 
+    import streamlit.web.bootstrap
+    from streamlit import config as _config
+
+    dirname = os.path.dirname(__file__)
+    filename = os.path.join(dirname, STREAMLIT_APP_PATH)
+
+    _config.set_option("server.port", config['STREAMLIT_APP_PORT'])
+    args = [f"{absolute_csv_file_path}"]
+
+    #streamlit.cli.main_run(filename, args)
+    streamlit.web.bootstrap.run(filename,'',args,flag_options = {})
     ### End streamlit dashboard 
 
 if __name__ == "__main__":

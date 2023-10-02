@@ -23,7 +23,6 @@ def run(scope, file):
         print ("👨🏻‍💻 Starting AI code review on {0}".format(scope, file))
 
     ailinter.run(scope, file)
-    print ("✅ Code review complete.")
 
 cli.add_command(run)
 
