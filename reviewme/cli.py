@@ -9,9 +9,9 @@ logging.basicConfig(level=logging.WARN)
 @click.pass_context
 def cli(ctx):
     if ctx.invoked_subcommand is None:
-        print ("👨🏻‍💻 Starting AI code review on branch")
+        print ("👨🏻‍💻 Starting AI code review on branch", flush=True)
         ailinter.run("branch", "")
-        print ("✅ Code review complete.")
+        print ("✅ Code review complete.", flush=True)
 
 @click.command()
 @click.option('--scope', default="branch", help='Scope of code review. Can be "commit", "branch", or "repo". Defaults to "branch"')
