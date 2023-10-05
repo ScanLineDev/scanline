@@ -1,3 +1,20 @@
+## Why use Scanline? 
+
+_“Scanline already saved us a few weeks on prod outages by catching race conditions”_ - CTO, ML infrastructure company 
+
+_“That issue would have hurt us bad in the future”_ - SWE, AI startup
+
+_“I look smarter to my team”_ - anon
+
+_“I can finally augment myself!”_ - Ray, eng manager 
+
+_“I can replace my eng manager!”_ - SWE (works with Ray)
+
+_“I can review my teams PRs in seconds”_ - Ray, eng manager
+
+_"Code gen and automatic PRs are still unreliable, but Scanline's code review is immediately useful and actionable."_ - Friend who's tried hundreds of AI tools 
+
+
 # ScanLine (Alpha)
 
 This tool reviews your code using GPT4 and points out ways to impove it, like having an experienced code reviewer on your team. This should not replace you doing good code review, it is meant to assist! 
@@ -11,11 +28,18 @@ It'll provide feedback in areas like security, performance, race conditions, con
 This is the V0 release so it may be buggy & design can change suddenly. 
 ## Install
 - Install the latest release of the CLI tool
+
+**For Apple M1+ Silicon (ARM64):**
 ```bash
 bash -c "$(curl -sSL https://raw.githubusercontent.com/ScanLineDev/scanline/main/install.sh)"
 ```
-- Set a local `.env` file with your `OPENAI_API_KEY`, or `export OPENAI_API_KEY=xxx`
 
+**For Apple Intel (x86):**
+```bash
+bash -c "$(curl -sSL https://raw.githubusercontent.com/ScanLineDev/scanline/main/install_x86.sh)"
+```
+
+- Set a local `.env` file with your `OPENAI_API_KEY`, or `export OPENAI_API_KEY=xxx`
 
 
 ## Usage

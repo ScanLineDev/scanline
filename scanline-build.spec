@@ -29,7 +29,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='aicli',
+    name='scanline',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
