@@ -419,8 +419,21 @@ def run(scope, onlyReviewThisFile, model):
     # Prepend the variable declaration
     js_data = f"var data = {json_data};"
 
+    # absolute_js_file_path = os.path.join(SAVED_REVIEWS_DIR, f"data.js")
+
+    absolute_js_file_path="reviewme/ailinter/webapp-test/data.js"
+
+    #### a bit more general way to save to the local dir 
+    # if getattr(sys, 'frozen', False):
+    #     base_dir = sys._MEIPASS
+    # else:
+    #     base_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # absolute_js_file_path = os.path.join(base_dir, "webapp-test/data.js")
+    ####
+
     # Write to a .js file
-    with open('data.js', 'w') as f:
+    with open(absolute_js_file_path, 'w') as f:
         f.write(js_data)
 
     ############################
@@ -428,18 +441,18 @@ def run(scope, onlyReviewThisFile, model):
     ############################
 
     # Create a symbolic link in the "webapp-test" directory
-    os.symlink('/var/tmp/organized_feedback_dict_CURRENT.csv', './webapp-test/organized_feedback_dict_CURRENT.csv')
+    # os.symlink('/var/tmp/organized_feedback_dict_CURRENT.csv', './webapp-test/organized_feedback_dict_CURRENT.csv')
 
-    # Change the current working directory to "webapp-test"
-    os.chdir('./webapp-test')
+    # # Change the current working directory to "webapp-test"
+    # os.chdir('./webapp-test')
 
-    # Start the HTTP server
-    PORT = 8000
-    Handler = http.server.SimpleHTTPRequestHandler
+    # # Start the HTTP server
+    # PORT = 8000
+    # Handler = http.server.SimpleHTTPRequestHandler
 
-    with socketserver.TCPServer(("", PORT), Handler) as httpd:
-        print("serving at port", PORT)
-        httpd.serve_forever()
+    # with socketserver.TCPServer(("", PORT), Handler) as httpd:
+    #     print("serving at port", PORT)
+    #     httpd.serve_forever()
 
     
     ############################
