@@ -2,7 +2,7 @@
 echo "👋🏼 Welcome to Scanline, so glad you're here!"
 echo "⏳ Downloading requirements...."
 curl -L --progress-bar -o scanline https://github.com/ScanLineDev/scanline/releases/download/v2.0.0/scanline
-chmod +x aicli
+chmod +x scanline
 echo "🔐 We need your password to install the CLI in the right folder. (This is only used locally, we never see this.)"
 read -s SUDO_PASSWORD
 echo $SUDO_PASSWORD | sudo -S mv scanline /usr/local/bin/scan
