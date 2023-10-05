@@ -29,7 +29,6 @@ setup(
         "PyYAML==6.0.1",
         "setuptools==68.1.2",
         "streamlit==1.26.0",
-        "click-default-group==1.2.4"
     ],
     entry_points={
         'console_scripts': [

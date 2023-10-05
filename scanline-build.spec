@@ -10,7 +10,7 @@ a = Analysis(
     datas=[('reviewme/ailinter/config.yaml', 'reviewme/ailinter'),
     ('reviewme/ailinter/rule_templates/human_guide_1.md', 'reviewme/ailinter/rule_templates'),
     ('reviewme/ailinter/streamlit/streamlit_app.py', 'streamlit')],
-    hiddenimports=['click_default_group', 'streamlit','logging','pandas'],
+    hiddenimports=[],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
