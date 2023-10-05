@@ -1,16 +1,18 @@
 ## Why use Scanline? 
 
-“Scanline already saved us a few weeks on prod outages by catching race conditions” - CTO, ML infrastructure company 
+_“Scanline already saved us a few weeks on prod outages by catching race conditions”_ - CTO, ML infrastructure company 
 
-“That issue would have hurt us bad in the future” - SWE, AI startup
+_“That issue would have hurt us bad in the future”_ - SWE, AI startup
 
-“I look smarter to my team” - anon
+_“I look smarter to my team”_ - anon
 
-“i feel can augment myself!” - Ray, eng manager 
+_“I can finally augment myself!”_ - Ray, eng manager 
 
-“I can replace my eng manager!” - SWE (works with Ray)
+_“I can replace my eng manager!”_ - SWE (works with Ray)
 
-“I can review my teams PRs in seconds” - Ray, eng manager
+_“I can review my teams PRs in seconds”_ - Ray, eng manager
+
+_"Code gen and automatic PRs are still unreliable, but Scanline's code review is immediately useful and actionable."_ - Friend who's tried hundreds of AI tools 
 
 
 # ScanLine (Alpha)
