@@ -407,7 +407,7 @@ def run(scope, onlyReviewThisFile, model):
     # Remove the word "Issues" from the "Error Category" column
     organized_feedback_df['Error Category'] = organized_feedback_df['Error Category'].str.replace(' Issues', '')
 
-    organized_feedback_df.to_csv(absolute_csv_file_path, index=False)
+    # organized_feedback_df.to_csv(absolute_csv_file_path, index=False)
 
     print (f"\n\n=== ✅ Saved this review to {absolute_csv_file_path} ===\n")
     print ("✅ Code review complete.")
@@ -425,55 +425,41 @@ def run(scope, onlyReviewThisFile, model):
     # absolute_js_file_path="reviewme/ailinter/webapp-test/data.js"
 
     ## NEW WAY 
-    SAVED_REVIEWS_DIR = "/var/tmp"
-    absolute_js_file_path = os.path.join(SAVED_REVIEWS_DIR, f"scanline/data.js")
+    SAVED_REVIEWS_DIR = "/var/tmp/scanline"
+    os.makedirs(SAVED_REVIEWS_DIR, exist_ok=True)
+    absolute_js_file_path = os.path.join(SAVED_REVIEWS_DIR, f"data.js")
     ####
 
     # Write to a .js file
     with open(absolute_js_file_path, 'w') as f:
         f.write(js_data)
 
+    ############################
+    ### COPY INDEX.HTML, STYLES.CSS AND SCRIPTS.JS TO VAR/TMP
+    ############################
+
+    # copy the index.html, styles.css and scripts.js files to the /var/tmp directory
+    import shutil
+
+    # copy index.html 
+    src = 'reviewme/ailinter/webapp-test/index.html'
+    index_html_file = '/var/tmp/scanline/index.html'
+    shutil.copy2(src, index_html_file)
+
+    # copy scripts.js
+    src = 'reviewme/ailinter/webapp-test/scripts.js'
+    dst = '/var/tmp/scanline/scripts.js'
+    shutil.copy2(src, dst)
+
+    # copy styles.css
+    src = 'reviewme/ailinter/webapp-test/styles.css'
+    dst = '/var/tmp/scanline/styles.css'
+    shutil.copy2(src, dst)
 
     ############################
-    ### RUN LOCAL WEBAPP (not yet working)
-    ############################
+    ## Open the .html 
+    print (f"\n\n=== ✅ Opening the webapp in your browser... ===\n")
+    print (f"index_html_file: {index_html_file}}")
 
-    # Create a symbolic link in the "webapp-test" directory
-    # os.symlink('/var/tmp/organized_feedback_dict_CURRENT.csv', './webapp-test/organized_feedback_dict_CURRENT.csv')
-
-    # # Change the current working directory to "webapp-test"
-    # os.chdir('./webapp-test')
-
-    # # Start the HTTP server
-    # PORT = 8000
-    # Handler = http.server.SimpleHTTPRequestHandler
-
-    # with socketserver.TCPServer(("", PORT), Handler) as httpd:
-    #     print("serving at port", PORT)
-    #     httpd.serve_forever()
-
-    
-    ############################
-    ### RUN STREAMLIT DASHBOARD 
-    ## commented out while testing webapp
-    ############################
-    # if getattr(sys, 'frozen', False):
-    #     base_dir = sys._MEIPASS
-    # else:
-    #     base_dir = os.path.dirname(os.path.abspath(__file__))
-
-    # STREAMLIT_APP_PATH = os.path.join(base_dir, config['STREAMLIT_LOCAL_PATH'])
-
-    # ### New way to call Streamlit 
-    # import streamlit.web.bootstrap
-    # from streamlit import config as _config
-
-    # dirname = os.path.dirname(__file__)
-    # filename = os.path.join(dirname, STREAMLIT_APP_PATH)
-
-    # _config.set_option("server.port", config['STREAMLIT_APP_PORT'])
-    # args = [f"{absolute_csv_file_path}"]
-
-    # #streamlit.cli.main_run(filename, args)
-    # streamlit.web.bootstrap.run(filename,'',args,flag_options = {})
-    ### End streamlit dashboard 
+    import webbrowser
+    webbrowser.open_new_tab(f"file://{index_html_file}")
