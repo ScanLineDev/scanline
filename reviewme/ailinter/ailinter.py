@@ -459,7 +459,7 @@ def run(scope, onlyReviewThisFile, model):
     ############################
     ## Open the .html 
     print (f"\n\n=== ✅ Opening the webapp in your browser... ===\n")
-    print (f"index_html_file: {index_html_file}}")
+    print (f"index_html_file: {index_html_file}")
 
     import webbrowser
     webbrowser.open_new_tab(f"file://{index_html_file}")
