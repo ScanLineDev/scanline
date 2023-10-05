@@ -3,7 +3,7 @@
 window.addEventListener('load', handleFileSelect);
 
 function handleFileSelect() {
-    const filePath = "http://localhost:8000/organized_feedback_dict_CURRENT.csv"; // Replace with your file path
+    const filePath = "http://[::]:8000/organized_feedback_dict_CURRENT.csv"; // Replace with your file path
 
     fetch(filePath)
         .then(response => response.text())
