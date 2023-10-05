@@ -449,17 +449,17 @@ def run(scope, onlyReviewThisFile, model):
 
     dir_path = get_install_dir()
     # copy index.html 
-    src = os.path.join(dir_path, 'reviewme/ailinter/webapp-test/index.html')
+    src = os.path.join(dir_path, 'webapp-test/index.html')
     index_html_file = '/var/tmp/scanline/index.html'
     shutil.copy2(src, index_html_file)
 
     # copy scripts.js
-    src = os.path.join(dir_path, 'reviewme/ailinter/webapp-test/scripts.js')
+    src = os.path.join(dir_path, 'webapp-test/scripts.js')
     dst = '/var/tmp/scanline/scripts.js'
     shutil.copy2(src, dst)
 
     # copy styles.css
-    src = os.path.join(dir_path, 'reviewme/ailinter/webapp-test/styles.css')
+    src = os.path.join(dir_path, 'webapp-test/styles.css')
     dst = '/var/tmp/scanline/styles.css'
     shutil.copy2(src, dst)
 

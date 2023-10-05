@@ -5,7 +5,7 @@ curl -L --progress-bar -o scanline https://github.com/ScanLineDev/scanline/relea
 chmod +x scanline
 echo "🔐 We need your password to install the CLI in the right folder. (This is only used locally, we never see this.)"
 read -s SUDO_PASSWORD
-echo $SUDO_PASSWORD | sudo -S mv scanline /usr/local/bin/scan
+echo $SUDO_PASSWORD | sudo -S mv scanline /usr/local/bin/scanline
 echo -e "\n"
 echo "🗝 Last step - enter your OpenAI API key (this is only used locally, we never see this.):"
 read OPENAI_API_KEY

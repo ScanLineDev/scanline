@@ -1,2 +1,2 @@
 pyinstaller scanline-build.spec
-mv dist/aicli /usr/local/bin/scandev
+mv dist/scanline /usr/local/bin/scanline
