@@ -413,7 +413,7 @@ def run(scope, onlyReviewThisFile, model):
     print ("✅ Code review complete.")
 
     ############################
-    ### Convert DataFrame to JSON for simple-webapp 
+    ### Convert DataFrame to JSON format for simple-webapp 
     json_data = organized_feedback_df.to_json(orient="records")
 
     # Prepend the variable declaration
@@ -421,20 +421,18 @@ def run(scope, onlyReviewThisFile, model):
 
     # absolute_js_file_path = os.path.join(SAVED_REVIEWS_DIR, f"data.js")
 
-    absolute_js_file_path="reviewme/ailinter/webapp-test/data.js"
+    ###OLD WAY 
+    # absolute_js_file_path="reviewme/ailinter/webapp-test/data.js"
 
-    #### a bit more general way to save to the local dir 
-    # if getattr(sys, 'frozen', False):
-    #     base_dir = sys._MEIPASS
-    # else:
-    #     base_dir = os.path.dirname(os.path.abspath(__file__))
-
-    # absolute_js_file_path = os.path.join(base_dir, "webapp-test/data.js")
+    ## NEW WAY 
+    SAVED_REVIEWS_DIR = "/var/tmp"
+    absolute_js_file_path = os.path.join(SAVED_REVIEWS_DIR, f"scanline/data.js")
     ####
 
     # Write to a .js file
     with open(absolute_js_file_path, 'w') as f:
         f.write(js_data)
+
 
     ############################
     ### RUN LOCAL WEBAPP (not yet working)
