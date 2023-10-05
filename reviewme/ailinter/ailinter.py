@@ -30,8 +30,12 @@ load_dotenv()
 
 # load the local rule guide .md
 
-def load_rule_guide(config):
+def get_install_dir():
     dir_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return dir_path
+
+def load_rule_guide(config):
+    dir_path = get_install_dir()
     rule_guide = config['RULE_GUIDE']
     
     if getattr(sys, '_MEIPASS', False):
@@ -443,18 +447,19 @@ def run(scope, onlyReviewThisFile, model):
     # copy the index.html, styles.css and scripts.js files to the /var/tmp directory
     import shutil
 
+    dir_path = get_install_dir()
     # copy index.html 
-    src = 'reviewme/ailinter/webapp-test/index.html'
+    src = os.path.join(dir_path, 'reviewme/ailinter/webapp-test/index.html')
     index_html_file = '/var/tmp/scanline/index.html'
     shutil.copy2(src, index_html_file)
 
     # copy scripts.js
-    src = 'reviewme/ailinter/webapp-test/scripts.js'
+    src = os.path.join(dir_path, 'reviewme/ailinter/webapp-test/scripts.js')
     dst = '/var/tmp/scanline/scripts.js'
     shutil.copy2(src, dst)
 
     # copy styles.css
-    src = 'reviewme/ailinter/webapp-test/styles.css'
+    src = os.path.join(dir_path, 'reviewme/ailinter/webapp-test/styles.css')
     dst = '/var/tmp/scanline/styles.css'
     shutil.copy2(src, dst)
 

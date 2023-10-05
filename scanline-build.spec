@@ -9,6 +9,7 @@ a = Analysis(
     binaries=[],
     datas=[('reviewme/ailinter/config.yaml', 'reviewme/ailinter'),
     ('reviewme/ailinter/rule_templates/human_guide_1.md', 'reviewme/ailinter/rule_templates'),
+    ('reviewme/ailinter/webapp-test/index.html', 'webapp-index'),
     ('reviewme/ailinter/streamlit/streamlit_app.py', 'streamlit')],
     hiddenimports=[],
     hookspath=[],
