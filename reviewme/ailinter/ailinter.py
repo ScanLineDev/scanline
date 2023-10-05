@@ -369,16 +369,6 @@ def run(scope, onlyReviewThisFile, model):
     #print ("\n\n=== 🔍 Files to review ===")
     #print ("\n🔍 " + "\n🔍 ".join(files_to_review_list))
 
-    ## Add logic to get the files that were examined: either file_contents or file_paths_changed, depending on 'scope' 
-    # print ("\n\n=== ✅ Files that passed ===")
-    # print ("\n✅ " + "\n✅ ".join(okay_file_list))
-    
-    # print ("\n\n=== Done. ===\nSee above for code review. \nNow running the rest of your code...\n")
-        # if llm_response.strip() != "Pass" and file_path != "ailinter.py":
-        #     with open(file_path, 'w') as f:
-        #         f.write(llm_response)
-    print ("\n\n=== Done. ===\nSee above for code review. \nNow running the rest of your code...\n")
-
     ############################
     ### Save this review for record-keeping and display
     ### Saves the organized feedback results into a local folder. This can be referenced and updated later, in terminal or the streamlit app 
@@ -393,21 +383,22 @@ def run(scope, onlyReviewThisFile, model):
     absolute_csv_file_path = os.path.join(SAVED_REVIEWS_DIR, f"organized_feedback_dict_CURRENT.csv")
     
     organized_feedback_df = pd.DataFrame(organized_feedback_dict)
-    if not organized_feedback_df.empty and organize_feedback_items != None:
-        # Add the emoji and error category name for each error category
-        organized_feedback_df['error_category'] = organized_feedback_df['error_category'].apply(lambda x: f"{x} {LIST_OF_ERROR_CATEGORIES[x]}")
-        organized_feedback_df = organized_feedback_df[['error_category', 'priority_score', 'filepath', 'function_name', 'line_number', 'fail', 'fix']] #re-order the columns 
-        organized_feedback_df.columns = ['Error Category', 'Priority', 'Filepath', 'Function Name', 'Line Number', 'Issue', 'Suggested Fix']  # re-name the columns
-        # re-order the rows by priority. first high, then medium, then low 
-        priority_order = ["🔴 High", "🟠 Medium", "🟡 Low"]
-        organized_feedback_df['Priority'] = pd.Categorical(organized_feedback_df['Priority'], categories=priority_order, ordered=True)
-        organized_feedback_df = organized_feedback_df.sort_values('Priority')
+    print ("✅ Code review complete.")
+    if organized_feedback_df.empty:
+        return
+
+    # Add the emoji and error category name for each error category
+    organized_feedback_df['error_category'] = organized_feedback_df['error_category'].apply(lambda x: f"{x} {LIST_OF_ERROR_CATEGORIES[x]}")
+    organized_feedback_df = organized_feedback_df[['error_category', 'priority_score', 'filepath', 'function_name', 'line_number', 'fail', 'fix']] #re-order the columns 
+    organized_feedback_df.columns = ['Error Category', 'Priority', 'Filepath', 'Function Name', 'Line Number', 'Issue', 'Suggested Fix']  # re-name the columns
+    # re-order the rows by priority. first high, then medium, then low 
+    priority_order = ["🔴 High", "🟠 Medium", "🟡 Low"]
+    organized_feedback_df['Priority'] = pd.Categorical(organized_feedback_df['Priority'], categories=priority_order, ordered=True)
+    organized_feedback_df = organized_feedback_df.sort_values('Priority')
 
     # save to CSV 
     # Remove the word "Issues" from the "Error Category" column
     organized_feedback_df['Error Category'] = organized_feedback_df['Error Category'].str.replace(' Issues', '')
-
     # organized_feedback_df.to_csv(absolute_csv_file_path, index=False)
 
     print (f"\n\n=== ✅ Saved this review to {absolute_csv_file_path} ===\n")
-    print ("✅ Code review complete.")
