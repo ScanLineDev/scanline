@@ -7,6 +7,11 @@ import logging
 import pandas as pd
 import argparse
 
+#to run local webapp
+import http.server
+import socketserver
+import socketserver
+
 from reviewme.ailinter.helpers import create_openai_chat_completion, create_simple_openai_chat_completion, load_config
 from reviewme.ailinter.format_results import organize_feedback_items, format_feedback_for_print, get_files_to_review, get_okay_files, PRIORITY_MAP, LIST_OF_ERROR_CATEGORIES, DESCRIPTIONS_OF_ERROR_CATEGORIES
 
@@ -382,7 +387,10 @@ def run(scope, onlyReviewThisFile, model):
     now = datetime.now().strftime("%Y%m%d-%H%M%S")
     SAVED_REVIEWS_DIR = "/var/tmp"
 
-    absolute_csv_file_path = os.path.join(SAVED_REVIEWS_DIR, f"organized_feedback_dict_{now}.csv")
+    # absolute_csv_file_path = os.path.join(SAVED_REVIEWS_DIR, f"organized_feedback_dict_{now}.csv")
+
+    # for the webapp MVP, we aren't passing the unique filename as a variable, so we just write to the same filename each time for now 
+    absolute_csv_file_path = os.path.join(SAVED_REVIEWS_DIR, f"organized_feedback_dict_CURRENT.csv")
     
     organized_feedback_df = pd.DataFrame(organized_feedback_dict)
     if not organized_feedback_df.empty and organize_feedback_items != None:
@@ -396,30 +404,62 @@ def run(scope, onlyReviewThisFile, model):
         organized_feedback_df = organized_feedback_df.sort_values('Priority')
 
     # save to CSV 
-    organized_feedback_df.to_csv(absolute_csv_file_path, index=False)
+    # Remove the word "Issues" from the "Error Category" column
+    organized_feedback_df['Error Category'] = organized_feedback_df['Error Category'].str.replace(' Issues', '')
+
+    # organized_feedback_df.to_csv(absolute_csv_file_path, index=False)
 
     print (f"\n\n=== ✅ Saved this review to {absolute_csv_file_path} ===\n")
     print ("✅ Code review complete.")
+
     ############################
-    ### RUN STREAMLIT DASHBOARD 
+    ### Convert DataFrame to JSON format for simple-webapp 
+    json_data = organized_feedback_df.to_json(orient="records")
+
+    # Prepend the variable declaration
+    js_data = f"var data = {json_data};"
+
+    # absolute_js_file_path = os.path.join(SAVED_REVIEWS_DIR, f"data.js")
+
+    ###OLD WAY 
+    # absolute_js_file_path="reviewme/ailinter/webapp-test/data.js"
+
+    ## NEW WAY 
+    SAVED_REVIEWS_DIR = "/var/tmp/scanline"
+    os.makedirs(SAVED_REVIEWS_DIR, exist_ok=True)
+    absolute_js_file_path = os.path.join(SAVED_REVIEWS_DIR, f"data.js")
+    ####
+
+    # Write to a .js file
+    with open(absolute_js_file_path, 'w') as f:
+        f.write(js_data)
+
     ############################
-    if getattr(sys, 'frozen', False):
-        base_dir = sys._MEIPASS
-    else:
-        base_dir = os.path.dirname(os.path.abspath(__file__))
+    ### COPY INDEX.HTML, STYLES.CSS AND SCRIPTS.JS TO VAR/TMP
+    ############################
 
-    STREAMLIT_APP_PATH = os.path.join(base_dir, config['STREAMLIT_LOCAL_PATH'])
+    # copy the index.html, styles.css and scripts.js files to the /var/tmp directory
+    import shutil
 
-    ### New way to call Streamlit 
-    import streamlit.web.bootstrap
-    from streamlit import config as _config
+    # copy index.html 
+    src = 'reviewme/ailinter/webapp-test/index.html'
+    index_html_file = '/var/tmp/scanline/index.html'
+    shutil.copy2(src, index_html_file)
 
-    dirname = os.path.dirname(__file__)
-    filename = os.path.join(dirname, STREAMLIT_APP_PATH)
+    # copy scripts.js
+    src = 'reviewme/ailinter/webapp-test/scripts.js'
+    dst = '/var/tmp/scanline/scripts.js'
+    shutil.copy2(src, dst)
 
-    _config.set_option("server.port", config['STREAMLIT_APP_PORT'])
-    args = [f"{absolute_csv_file_path}"]
+    # copy styles.css
+    src = 'reviewme/ailinter/webapp-test/styles.css'
+    dst = '/var/tmp/scanline/styles.css'
+    shutil.copy2(src, dst)
 
-    #streamlit.cli.main_run(filename, args)
-    streamlit.web.bootstrap.run(filename,'',args,flag_options = {})
-    ### End streamlit dashboard 
+    ############################
+    ## Open the .html 
+    print (f"\n\n=== ✅ Opening the webapp in your browser... ===\n")
+    print (f"index_html_file: {index_html_file}}")
+
+    import webbrowser
+    webbrowser.open_new_tab(f"file://{index_html_file}")
