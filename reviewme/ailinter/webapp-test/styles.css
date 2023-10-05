@@ -2,15 +2,15 @@
 :root {
     --active-brightness: 0.85;
     --border-radius: 5px;
-    --box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
+    --box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.74), 0 2px 10px 0 rgba(0, 0, 0, 0.71);
     --color-accent: #118bee15;
     --color-bg: #1F1F1F;
     --color-bg-secondary: #2C2C2C;
-    --color-link: #118bee;
+    --color-link: #383838;
     --color-secondary: #920de9;
     --color-secondary-accent: #920de90b;
-    --color-shadow: #f4f4f4;
-    --color-table: #118bee;
+    --color-shadow: #606060;
+    --color-table: #828282;
     --color-text: #FFFFFF;
     --color-text-secondary: #999;
     --font-family: 'Roboto', sans-serif;
@@ -22,11 +22,11 @@
     --width-card-medium: 460px;
     --width-card-wide: 800px;
     --width-content: 1080px;
-    --color-table-header: #92e6ff; /* New variable for table header color */
+    --color-table-header: #626262; /* New variable for table header color */
     --color-table-row-alt: #282828; /* New variable for alternate table row color */
     --font-size-table-header: 1.3em; /* New variable for table header font size */
 }
-}
+
 
 body {
     background: var(--color-bg);
@@ -36,6 +36,11 @@ body {
     margin: 0;
     overflow-x: hidden;
     padding: 0;
+}
+
+.code-text {
+    font-family: 'Courier New', Courier, monospace;
+    color: rgb(73, 255, 249);
 }
 
 /* Forms */
@@ -117,14 +122,14 @@ table {
 
 @media (prefers-color-scheme: dark) {
     :root[color-mode="user"] {
-        --color-accent: #0097fc4f;
+        --color-accent: #e9f6ff4f;
         --color-bg: #333;
         --color-bg-secondary: #555;
         --color-link: #0097fc;
         --color-secondary: #e20de9;
         --color-secondary-accent: #e20de94f;
         --color-shadow: #bbbbbb20;
-        --color-table: #0097fc;
+        --color-table: #797979;
         --color-text: #f7f7f7;
         --color-text-secondary: #aaa;
     }
@@ -250,7 +255,7 @@ nav {
     display: flex;
     font-weight: bold;
     justify-content: space-between;
-    margin-bottom: 7rem;
+    margin-bottom: 2rem;
 }
 
 nav ul {
@@ -328,6 +333,21 @@ h4,
 h5,
 h6 {
     line-height: var(--line-height);
+}
+
+.centered {
+    text-align: center;
+    }
+
+h1 { 
+    font-size: 2.5em; /* Adjust size as needed */
+    color: white;
+}
+
+h2 {
+    font-size: 2em; /* Adjust size as needed */
+    color: white;
+    padding-left: 2rem; /* Adjust this value to match the left padding or margin of the tables */
 }
 
 mark {
@@ -562,8 +582,8 @@ table {
     padding: 0;
     white-space: normal;
     margin: 2rem; /* This will apply a margin of 2rem on top, right, bottom, and left */
+    margin-top: 0.1rem; 
 }
-
 
 table td,
 table th,
@@ -584,6 +604,10 @@ table thead {
 
 table thead th:first-child {
     border-top-left-radius: var(--border-radius);
+}
+
+th {
+    background-color: #464646; /* LightGrey */
 }
 
 table thead th {
