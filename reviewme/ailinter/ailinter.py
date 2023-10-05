@@ -393,22 +393,24 @@ def run(scope, onlyReviewThisFile, model):
     absolute_csv_file_path = os.path.join(SAVED_REVIEWS_DIR, f"organized_feedback_dict_CURRENT.csv")
     
     organized_feedback_df = pd.DataFrame(organized_feedback_dict)
-    if not organized_feedback_df.empty and organize_feedback_items != None:
-        # Add the emoji and error category name for each error category
-        organized_feedback_df['error_category'] = organized_feedback_df['error_category'].apply(lambda x: f"{x} {LIST_OF_ERROR_CATEGORIES[x]}")
-        organized_feedback_df = organized_feedback_df[['error_category', 'priority_score', 'filepath', 'function_name', 'line_number', 'fail', 'fix']] #re-order the columns 
-        organized_feedback_df.columns = ['Error Category', 'Priority', 'Filepath', 'Function Name', 'Line Number', 'Issue', 'Suggested Fix']  # re-name the columns
-        # re-order the rows by priority. first high, then medium, then low 
-        priority_order = ["🔴 High", "🟠 Medium", "🟡 Low"]
-        organized_feedback_df['Priority'] = pd.Categorical(organized_feedback_df['Priority'], categories=priority_order, ordered=True)
-        organized_feedback_df = organized_feedback_df.sort_values('Priority')
+    if organized_feedback_df.empty:
+        print ("No feedback found. All done.")
+        return
+
+    # Add the emoji and error category name for each error category
+    organized_feedback_df['error_category'] = organized_feedback_df['error_category'].apply(lambda x: f"{x} {LIST_OF_ERROR_CATEGORIES[x]}")
+    organized_feedback_df = organized_feedback_df[['error_category', 'priority_score', 'filepath', 'function_name', 'line_number', 'fail', 'fix']] #re-order the columns 
+    organized_feedback_df.columns = ['Error Category', 'Priority', 'Filepath', 'Function Name', 'Line Number', 'Issue', 'Suggested Fix']  # re-name the columns
+    # re-order the rows by priority. first high, then medium, then low 
+    priority_order = ["🔴 High", "🟠 Medium", "🟡 Low"]
+    organized_feedback_df['Priority'] = pd.Categorical(organized_feedback_df['Priority'], categories=priority_order, ordered=True)
+    organized_feedback_df = organized_feedback_df.sort_values('Priority')
 
     # save to CSV 
     # Remove the word "Issues" from the "Error Category" column
     organized_feedback_df['Error Category'] = organized_feedback_df['Error Category'].str.replace(' Issues', '')
 
     # organized_feedback_df.to_csv(absolute_csv_file_path, index=False)
-
     print (f"\n\n=== ✅ Saved this review to {absolute_csv_file_path} ===\n")
     print ("✅ Code review complete.")
 
@@ -459,7 +461,7 @@ def run(scope, onlyReviewThisFile, model):
     ############################
     ## Open the .html 
     print (f"\n\n=== ✅ Opening the webapp in your browser... ===\n")
-    print (f"index_html_file: {index_html_file}}")
+    print (f"index_html_file: {index_html_file}")
 
     import webbrowser
     webbrowser.open_new_tab(f"file://{index_html_file}")

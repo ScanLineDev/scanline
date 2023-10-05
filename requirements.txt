@@ -5,6 +5,5 @@ pandas==2.0.3
 python-dotenv==1.0.0
 PyYAML==6.0.1
 setuptools==68.1.2
-streamlit==1.26.0
 markdown==3.4.4
-click-default-group
+click-default-group==1.2.4
