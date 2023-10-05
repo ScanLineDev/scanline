@@ -28,10 +28,19 @@ It'll provide feedback in areas like security, performance, race conditions, con
 This is the V0 release so it may be buggy & design can change suddenly. 
 ## Install
 - Install the latest release of the CLI tool
+
+**For Apple M1+ Silicon (ARM64):**
 ```bash
 bash -c "$(curl -sSL https://raw.githubusercontent.com/ScanLineDev/scanline/main/install.sh)"
 ```
+
+**For Apple Intel (x86):**
+```bash
+bash -c "$(curl -sSL https://raw.githubusercontent.com/ScanLineDev/scanline/main/install_x86.sh)"
+```
+
 - Set a local `.env` file with your `OPENAI_API_KEY`, or `export OPENAI_API_KEY=xxx`
+
 
 ## Usage
 ```bash
