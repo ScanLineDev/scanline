@@ -411,8 +411,20 @@ def run(scope, onlyReviewThisFile, model):
 
     print (f"\n\n=== ✅ Saved this review to {absolute_csv_file_path} ===\n")
     print ("✅ Code review complete.")
+
     ############################
-    ### RUN LOCAL WEBAPP
+    ### Convert DataFrame to JSON for simple-webapp 
+    json_data = organized_feedback_df.to_json(orient="records")
+
+    # Prepend the variable declaration
+    js_data = f"var data = {json_data};"
+
+    # Write to a .js file
+    with open('data.js', 'w') as f:
+        f.write(js_data)
+
+    ############################
+    ### RUN LOCAL WEBAPP (not yet working)
     ############################
 
     # Create a symbolic link in the "webapp-test" directory
