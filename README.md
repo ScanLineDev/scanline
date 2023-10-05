@@ -1,3 +1,18 @@
+## Why use Scanline? 
+
+“Scanline already saved us a few weeks on prod outages by catching race conditions” - CTO, ML infrastructure company 
+
+“That issue would have hurt us bad in the future” - SWE, AI startup
+
+“I look smarter to my team” - anon
+
+“i feel can augment myself!” - Ray, eng manager 
+
+“I can replace my eng manager!” - SWE (works with Ray)
+
+“I can review my teams PRs in seconds” - Ray, eng manager
+
+
 # ScanLine (Alpha)
 
 This tool reviews your code using GPT4 and points out ways to impove it, like having an experienced code reviewer on your team. This should not replace you doing good code review, it is meant to assist! 
@@ -15,8 +30,6 @@ This is the V0 release so it may be buggy & design can change suddenly.
 bash -c "$(curl -sSL https://raw.githubusercontent.com/ScanLineDev/scanline/main/install.sh)"
 ```
 - Set a local `.env` file with your `OPENAI_API_KEY`, or `export OPENAI_API_KEY=xxx`
-
-
 
 ## Usage
 ```bash
