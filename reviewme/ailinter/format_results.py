@@ -46,10 +46,11 @@ def extract_feedback_items(feedback_string):
     pattern = r"(.*?):(.*?):(\d+) (.*?)\s+\[(.*?)\] Fail: (.*?)\s+Fix: (.*?)(?=\*\*|$)"
     
     for i in range(0, len(segments), 2):
-        combined_item = segments[i] + segments[i+1]
-        match = re.match(pattern, combined_item.strip(), re.MULTILINE | re.DOTALL)
-        if match:
-            feedback_items.append(match.groups())
+        if i+1 < len(segments):
+            combined_item = segments[i] + segments[i+1]
+            match = re.match(pattern, combined_item.strip(), re.MULTILINE | re.DOTALL)
+            if match:
+                feedback_items.append(match.groups())
             
     return feedback_items
 
