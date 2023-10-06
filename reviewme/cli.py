@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 @click.group(cls=DefaultGroup, default='run', default_if_no_args=True)
 def cli():
-    print("group execution")
+    print("Booting up code review process... ")
     pass
 
 @cli.command()

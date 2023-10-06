@@ -25,6 +25,7 @@
     --color-table-header: #626262; /* New variable for table header color */
     --color-table-row-alt: #282828; /* New variable for alternate table row color */
     --font-size-table-header: 1.3em; /* New variable for table header font size */
+    --color-third-accent: #dbdbdb; /* New variable for third accent color */
 }
 
 
@@ -118,6 +119,28 @@ table {
 *::-webkit-scrollbar-thumb {
     background-color: rgb(202, 202, 232);
     border-radius: 10px;
+}
+
+#feedback-form {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background-color: var(--color-third-accent);
+    padding: 10px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    color: var(--color-bg-secondary);
+    text-decoration: none;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+}
+
+#feedback-form a {
+    display: block;
+    color: var(--color-bg-secondary);
+    text-decoration: none;
+    font-weight: bold;
 }
 
 @media (prefers-color-scheme: dark) {
