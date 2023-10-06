@@ -1,3 +1,17 @@
+## Quick Start - Install
+
+**For Apple M1+ Silicon (ARM64):**
+```bash
+bash -c "$(curl -sSL https://raw.githubusercontent.com/ScanLineDev/scanline/main/install.sh)"
+```
+
+**For Apple Intel (x86):**
+```bash
+bash -c "$(curl -sSL https://raw.githubusercontent.com/ScanLineDev/scanline/main/install_x86.sh)"
+```
+
+Run `scanline` on the desired branch
+
 ## Why use Scanline? 
 
 _“Scanline already saved us a few weeks on prod outages by catching race conditions”_ - CTO, ML infrastructure company 
