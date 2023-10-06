@@ -90,7 +90,7 @@ def read_py_files(file_paths):
     file_contents = {}
 
     for file_path in file_paths:
-        logging.debug(f"Reading extension{os.path.splittext(file_path)[1]}")
+        logging.debug(f"Reading extension{os.path.splitext(file_path)[1]}")
         if os.path.splitext(file_path)[1] not in SUPPORTED_FILE_EXTENSIONS:
             logging.debug(f"Skipping {file_path} because it is not a supported file extension")
             continue
@@ -274,7 +274,7 @@ def read_file(file_path):
 
 def run(scope, onlyReviewThisFile, model): 
     # Get all .py files in this directory and subdirectories
-    excluded_dirs = ["bin", "lib", "include", "env"]
+    excluded_dirs = ["bin", "lib", "include", "env", "node_modules"]
     file_paths = []
 
     for root, dirs, files in os.walk("."):

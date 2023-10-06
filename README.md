@@ -20,8 +20,8 @@ _"Code gen and automatic PRs are still unreliable, but Scanline's code review is
 This tool reviews your code using GPT4 and points out ways to impove it, like having an experienced code reviewer on your team. This should not replace you doing good code review, it is meant to assist! 
 
 **Privacy**
-Code is sent to OpenAI directly with your OpenAI key **(your code is only shared with OpenAI, not us)** 
 
+Code is sent to OpenAI directly with your OpenAI key **(your code is only shared with OpenAI, not us)** 
 
 It'll provide feedback in areas like security, performance, race conditions, consistency, testability, modularity, complexity, error handling, and optimization
 
