@@ -1,3 +1,3 @@
 pyinstaller scanline-build.spec
-echo "🔐 Scanline needs your permission to install into '/usr/local/bin/scanline'. (This is only used locally, we never see this.)"
+echo "🔐 We need your password to install the CLI in the right folder. (This is only used locally, we never see this.)"
 sudo mv dist/scanline /usr/local/bin/scanline

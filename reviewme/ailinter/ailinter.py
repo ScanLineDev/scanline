@@ -4,8 +4,9 @@ import os, sys
 from dotenv import load_dotenv
 from pprint import pprint 
 import logging 
-import pandas as pd
 import argparse
+import shutil
+import json
 
 #to run local webapp
 import http.server
@@ -15,11 +16,6 @@ import socketserver
 from reviewme.ailinter.helpers import create_openai_chat_completion, create_simple_openai_chat_completion, load_config
 from reviewme.ailinter.format_results import organize_feedback_items, format_feedback_for_print, get_files_to_review, get_okay_files, PRIORITY_MAP, LIST_OF_ERROR_CATEGORIES, DESCRIPTIONS_OF_ERROR_CATEGORIES
 
-
-# Suppress the SettingWithCopyWarning
-import warnings
-warnings.filterwarnings("ignore", category=pd.errors.SettingWithCopyWarning)
-
 ###########
 logging.getLogger(__name__)
 load_dotenv()
@@ -27,9 +23,6 @@ load_dotenv()
 ############################
 ## Load local rule guide 
 ############################
-
-# load the local rule guide .md
-
 def get_install_dir():
     dir_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
     return dir_path
@@ -49,7 +42,6 @@ def load_rule_guide(config):
 ############################
 ## Set up based on config 
 ############################
-
 config = load_config()
 RULE_GUIDE_MD = load_rule_guide(config)
 
@@ -61,8 +53,6 @@ os.makedirs(SAVED_REVIEWS_DIR, exist_ok=True)
 ############################
 ## Load all code in the directory 
 ############################
-
-# Read Python files and return content
 def read_py_files(file_paths):
     file_contents = {}
     for file_path in file_paths:
@@ -72,7 +62,6 @@ def read_py_files(file_paths):
         with open(file_path, 'r') as f:
             file_contents[file_path] = f.read()
     return file_contents
-
 
 # Check for local imports in the code and append the imported code
 def check_and_append_local_imports(code, file_paths):
@@ -86,7 +75,6 @@ def check_and_append_local_imports(code, file_paths):
                     code += '\n' + imported_code
             except Exception as e:
                 print(f"An error occurred while processing import statements: {e}")
-
     return code
 
 ############################
@@ -142,10 +130,9 @@ AILINTER_INSTRUCTIONS=f"""
 
     """
 
-# print ("---- AILINTER INSTRUCTIONS: ----  ", AILINTER_INSTRUCTIONS)
-#########
+############################
 ## Construct the prompt 
-#########
+############################
 
 def get_completion_prompt (code):
     completion_prompt = f"{AILINTER_INSTRUCTIONS} \n\n === RULE GUIDE: === {RULE_GUIDE_MD} \n\n === CODE TO REVIEW === ```\n {code} \n```"
@@ -195,7 +182,6 @@ def get_files_changed(target):
 
     return result
 
-
 def get_file_diffs(file_paths, target):
 
     file_diffs = {}
@@ -204,7 +190,6 @@ def get_file_diffs(file_paths, target):
             # print("git diff --unified=0 {0} {1}".format(target, file_path))
     # print(file_diffs)
     return file_diffs
-
 
 def get_final_organized_feedback(feedback_list):
 
@@ -354,6 +339,10 @@ def run(scope, onlyReviewThisFile, model):
 
             feedback_list.append(llm_response)
 
+    ########################################################
+    ## Format and Display the Results
+    ########################################################
+
     if feedback_list == [] or feedback_list == None:
         print ("\n\n=== No feedback found. All done. ===\n")
         return
@@ -376,11 +365,7 @@ def run(scope, onlyReviewThisFile, model):
     ## Add logic to get the files that were examined: either file_contents or file_paths_changed, depending on 'scope' 
     # print ("\n\n=== ✅ Files that passed ===")
     # print ("\n✅ " + "\n✅ ".join(okay_file_list))
-    
-    # print ("\n\n=== Done. ===\nSee above for code review. \nNow running the rest of your code...\n")
-        # if llm_response.strip() != "Pass" and file_path != "ailinter.py":
-        #     with open(file_path, 'w') as f:
-        #         f.write(llm_response)
+
     print ("\n\n=== Done. ===\nSee above for code review. \nNow running the rest of your code...\n")
 
     ############################
@@ -388,64 +373,61 @@ def run(scope, onlyReviewThisFile, model):
     ### Saves the organized feedback results into a local folder. This can be referenced and updated later, in terminal or the streamlit app 
     ############################
     # Format the dataframe 
-    now = datetime.now().strftime("%Y%m%d-%H%M%S")
-    SAVED_REVIEWS_DIR = "/var/tmp"
-
-    # absolute_csv_file_path = os.path.join(SAVED_REVIEWS_DIR, f"organized_feedback_dict_{now}.csv")
+    # now = datetime.now().strftime("%Y%m%d-%H%M%S")
+    # SAVED_REVIEWS_DIR = "/var/tmp"
 
     # for the webapp MVP, we aren't passing the unique filename as a variable, so we just write to the same filename each time for now 
-    absolute_csv_file_path = os.path.join(SAVED_REVIEWS_DIR, f"organized_feedback_dict_CURRENT.csv")
-    
-    organized_feedback_df = pd.DataFrame(organized_feedback_dict)
-    if organized_feedback_df.empty:
-        print ("No feedback found. All done.")
+    # absolute_csv_file_path = os.path.join(SAVED_REVIEWS_DIR, f"organized_feedback_dict_CURRENT.csv")
+
+    ############################
+    ## Format the dict to save to CSV and JS
+    ############################
+    # Check if the feedback dictionary is empty
+    if not organized_feedback_dict:
+        print("No feedback found. All done.")
         return
 
     # Add the emoji and error category name for each error category
-    organized_feedback_df['error_category'] = organized_feedback_df['error_category'].apply(lambda x: f"{x} {LIST_OF_ERROR_CATEGORIES[x]}")
-    organized_feedback_df = organized_feedback_df[['error_category', 'priority_score', 'filepath', 'function_name', 'line_number', 'fail', 'fix']] #re-order the columns 
-    organized_feedback_df.columns = ['Error Category', 'Priority', 'Filepath', 'Function Name', 'Line Number', 'Issue', 'Suggested Fix']  # re-name the columns
-    # re-order the rows by priority. first high, then medium, then low 
+    for feedback in organized_feedback_dict:
+        feedback['error_category'] = f"{feedback['error_category']} {LIST_OF_ERROR_CATEGORIES[feedback['error_category']]}"
+
+    # Re-order the columns
+    organized_feedback_dict = [{k: v for k, v in sorted(feedback.items(), key=lambda item: ['error_category', 'priority_score', 'filepath', 'function_name', 'line_number', 'fail', 'fix'].index(item[0]))} for feedback in organized_feedback_dict]
+
+    # Rename the columns
+    for feedback in organized_feedback_dict:
+        feedback['Error Category'] = feedback.pop('error_category')
+        feedback['Priority'] = feedback.pop('priority_score')
+        feedback['Filepath'] = feedback.pop('filepath')
+        feedback['Function Name'] = feedback.pop('function_name')
+        feedback['Line Number'] = feedback.pop('line_number')
+        feedback['Issue'] = feedback.pop('fail')
+        feedback['Suggested Fix'] = feedback.pop('fix')
+
+    # Re-order the rows by priority. first high, then medium, then low
     priority_order = ["🔴 High", "🟠 Medium", "🟡 Low"]
-    organized_feedback_df['Priority'] = pd.Categorical(organized_feedback_df['Priority'], categories=priority_order, ordered=True)
-    organized_feedback_df = organized_feedback_df.sort_values('Priority')
+    organized_feedback_dict.sort(key=lambda x: priority_order.index(x['Priority']))
 
-    # save to CSV 
     # Remove the word "Issues" from the "Error Category" column
-    organized_feedback_df['Error Category'] = organized_feedback_df['Error Category'].str.replace(' Issues', '')
-
-    # organized_feedback_df.to_csv(absolute_csv_file_path, index=False)
-    print (f"\n\n=== ✅ Saved this review to {absolute_csv_file_path} ===\n")
-    print ("✅ Code review complete.")
+    for feedback in organized_feedback_dict:
+        feedback['Error Category'] = feedback['Error Category'].replace(' Issues', '')
 
     ############################
-    ### Convert DataFrame to JSON format for simple-webapp 
-    json_data = organized_feedback_df.to_json(orient="records")
-
-    # Prepend the variable declaration
+    ## Save to JS file for webapp html 
+    json_data = json.dumps(organized_feedback_dict)
     js_data = f"var data = {json_data};"
-
-    # absolute_js_file_path = os.path.join(SAVED_REVIEWS_DIR, f"data.js")
-
-    ###OLD WAY 
-    # absolute_js_file_path="reviewme/ailinter/webapp-test/data.js"
-
-    ## NEW WAY 
     SAVED_REVIEWS_DIR = "/var/tmp/scanline"
     os.makedirs(SAVED_REVIEWS_DIR, exist_ok=True)
     absolute_js_file_path = os.path.join(SAVED_REVIEWS_DIR, f"data.js")
-    ####
-
-    # Write to a .js file
     with open(absolute_js_file_path, 'w') as f:
         f.write(js_data)
 
-    ############################
-    ### COPY INDEX.HTML, STYLES.CSS AND SCRIPTS.JS TO VAR/TMP
-    ############################
+    print(f"\n\n=== ✅ Saved this review to {absolute_js_file_path} ===\n")
+    print("✅ Code review complete.")
 
-    # copy the index.html, styles.css and scripts.js files to the /var/tmp directory
-    import shutil
+    ############################
+    ### Copy the index.html, styles.css and scripts.js files to the /var/tmp directory
+    ############################
 
     dir_path = get_install_dir()
     # copy index.html 
