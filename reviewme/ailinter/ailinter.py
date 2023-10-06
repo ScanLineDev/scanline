@@ -183,12 +183,13 @@ def get_files_changed(target):
     return result
 
 def get_file_diffs(file_paths, target):
+    # Get the diff for each file compared to target
+    # Note: Won't include any files that only exist upstream but not locally. 
 
     file_diffs = {}
     for file_path in file_paths:
-            file_diffs[file_path] = os.popen("git diff --unified=0 {0} {1}".format(target, file_path)).read()
-            # print("git diff --unified=0 {0} {1}".format(target, file_path))
-    # print(file_diffs)
+        logging.debug(f"Getting diff for {file_path} and target {target}")
+        file_diffs[file_path] = os.popen("git diff --unified=0 {0} {1} 2>/dev/null".format(target, file_path)).read()
     return file_diffs
 
 def get_final_organized_feedback(feedback_list):
@@ -284,7 +285,7 @@ def run(scope, onlyReviewThisFile, model):
                 content = f.read()
                 total_chars += len(content)
         except Exception as e:
-            logging.error(f"Error while reading {file_path}: {e}")
+            logging.debug(f"Error while reading {file_path}: {e}")
             
     GPT4_PRICING_1K_TOKENS = 0.03
     ESTIMATED_AVG_CHARS_PER_TOKEN = 4
