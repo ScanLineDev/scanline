@@ -94,9 +94,14 @@ def read_py_files(file_paths):
         if os.path.splitext(file_path)[1] not in SUPPORTED_FILE_EXTENSIONS:
             logging.debug(f"Skipping {file_path} because it is not a supported file extension")
             continue
+            
+        try:
+            with open(file_path, 'r') as f:
+                file_contents[file_path] = f.read()
+        except Exception as e:
+            logging.error(f"Error reading file {file_path}: {e}")
+            continue
 
-        with open(file_path, 'r') as f:
-            file_contents[file_path] = f.read()
     return file_contents
 
 # Check for local imports in the code and append the imported code
