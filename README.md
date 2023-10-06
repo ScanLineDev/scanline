@@ -73,7 +73,7 @@ Experimental: Modify config.yaml to twewak things like temperature, supported fi
 - Feel free to open a PR with your own changes if you'd like to see something added!
 - Open an issue if you find any bugs or have an ideas
 
-### Currently supported languages:
+## Currently supported languages:
 ```
 Python - .py
 JavaScript - .js
