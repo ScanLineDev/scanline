@@ -391,6 +391,13 @@ def run(scope, onlyReviewThisFile, model):
             except Exception as e:
                 logging.error(f"Error while reviewing {file_path}: {e}, skipping this file")
 
+
+        estimated_num_minutes = numTokens / 2500
+        estimated_max_minutes = round(estimated_num_minutes * 1.4)
+        estimated_min_minutes = round(estimated_num_minutes * 0.6)
+        print (f"\nProcessing and generating feedback for the files listed. This may take between {estimated_min_minutes} and {estimated_max_minutes} minutes...\n")
+        # print ("\nProcessing and generating feedback for all files. This will take several minutes...\n")
+
         # Wait for all the jobs to complete
         for future in futures:
             llm_response = future.result()
