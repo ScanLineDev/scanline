@@ -20,6 +20,39 @@ from reviewme.ailinter.format_results import organize_feedback_items, format_fee
 logging.getLogger(__name__)
 load_dotenv()
 
+SUPPORTED_FILE_EXTENSIONS = [
+    ".js",
+    ".py",
+    ".java",
+    ".c",
+    ".cpp",
+    ".cc",
+    ".cxx",
+    ".c++",
+    ".cs",
+    ".php",
+    ".ts",
+    ".sh",
+    ".bash",
+    ".swift",
+    ".kt",
+    ".kts",
+    ".rb",
+    ".go",
+    ".rs",
+    ".m",
+    ".mm",
+    ".r",
+    ".scala",
+    ".pl",
+    ".pm",
+    ".lua",
+    ".groovy",
+    ".grvy",
+    ".gy",
+    ".gvy"
+]
+
 ############################
 ## Load local rule guide 
 ############################
@@ -55,8 +88,11 @@ os.makedirs(SAVED_REVIEWS_DIR, exist_ok=True)
 ############################
 def read_py_files(file_paths):
     file_contents = {}
+
     for file_path in file_paths:
-        if not file_path.endswith('.py'):
+        logging.debug(f"Reading extension{os.path.splittext(file_path)[1]}")
+        if os.path.splitext(file_path)[1] not in SUPPORTED_FILE_EXTENSIONS:
+            logging.debug(f"Skipping {file_path} because it is not a supported file extension")
             continue
 
         with open(file_path, 'r') as f:
@@ -177,7 +213,7 @@ def get_files_changed(target):
     result = []
     for file_path in file_paths_changed:
         file_extension = os.path.splitext(file_path)[1]
-        if file_path != "" and file_extension not in EXCLUDED_EXTENSIONS:
+        if file_path != "" and file_extension in SUPPORTED_FILE_EXTENSIONS:
             result.append("./" + file_path)
 
     return result

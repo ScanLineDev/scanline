@@ -4,7 +4,7 @@ import click
 import logging
 from click_default_group import DefaultGroup
 
-logging.basicConfig(level=logging.ERROR)
+logging.basicConfig(level=logging.DEBUG)
 
 @click.group(cls=DefaultGroup, default='run', default_if_no_args=True)
 def cli():
