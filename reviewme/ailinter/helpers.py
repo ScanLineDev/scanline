@@ -2,7 +2,6 @@ import os
 import yaml
 from dotenv import load_dotenv
 from pprint import pprint 
-
 import openai
 
 ################################
@@ -23,7 +22,7 @@ config = load_config()
 ################################
 # Load .env file
 load_dotenv()
-ANTRHOPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
+# ANTRHOPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 #######
@@ -78,19 +77,19 @@ def create_openai_completion (prompt,
 ## Anthropic : Completion 
 ################################
 
-def create_anthropic_completion(prompt):
-  anthropic = Anthropic(
-      # defaults to os.environ.get("ANTHROPIC_API_KEY")
-      api_key=ANTRHOPIC_API_KEY,
-  )
-  try: 
-    completion = anthropic.completions.create(
-    model="claude-2",
-    prompt=f"{HUMAN_PROMPT}{prompt}{AI_PROMPT}",
-  )
-    return completion.completion
-  except Exception as e:
-    print(f"An error occurred: {e}")
+# def create_anthropic_completion(prompt):
+#   anthropic = Anthropic(
+#       # defaults to os.environ.get("ANTHROPIC_API_KEY")
+#       api_key=ANTRHOPIC_API_KEY,
+#   )
+#   try: 
+#     completion = anthropic.completions.create(
+#     model="claude-2",
+#     prompt=f"{HUMAN_PROMPT}{prompt}{AI_PROMPT}",
+#   )
+#     return completion.completion
+#   except Exception as e:
+#     print(f"An error occurred: {e}")
   
 
 ################################
@@ -100,6 +99,6 @@ def create_anthropic_completion(prompt):
 MODEL_MAP = {
    "text-davinci-003": create_openai_completion,
    "gpt-4-turbo": create_openai_completion, 
-   "claude-2": create_anthropic_completion
+  #  "claude-2": create_anthropic_completion
 }
 
