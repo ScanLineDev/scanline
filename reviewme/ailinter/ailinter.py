@@ -362,9 +362,6 @@ def run(scope, onlyReviewThisFile, model):
     #print ("\n\n=== 🔍 Files to review ===")
     #print ("\n🔍 " + "\n🔍 ".join(files_to_review_list))
 
-    ## Add logic to get the files that were examined: either file_contents or file_paths_changed, depending on 'scope' 
-    # print ("\n\n=== ✅ Files that passed ===")
-    # print ("\n✅ " + "\n✅ ".join(okay_file_list))
 
     print ("\n\n=== Done. ===\nSee above for code review. \nNow running the rest of your code...\n")
 
@@ -377,7 +374,6 @@ def run(scope, onlyReviewThisFile, model):
     # SAVED_REVIEWS_DIR = "/var/tmp"
 
     # for the webapp MVP, we aren't passing the unique filename as a variable, so we just write to the same filename each time for now 
-    # absolute_csv_file_path = os.path.join(SAVED_REVIEWS_DIR, f"organized_feedback_dict_CURRENT.csv")
 
     ############################
     ## Format the dict to save to CSV and JS
@@ -452,3 +448,4 @@ def run(scope, onlyReviewThisFile, model):
 
     import webbrowser
     webbrowser.open_new_tab(f"file://{index_html_file}")
+
