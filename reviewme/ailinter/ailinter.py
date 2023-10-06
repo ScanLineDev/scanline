@@ -20,6 +20,39 @@ from reviewme.ailinter.format_results import organize_feedback_items, format_fee
 logging.getLogger(__name__)
 load_dotenv()
 
+SUPPORTED_FILE_EXTENSIONS = [
+    ".js",
+    ".py",
+    ".java",
+    ".c",
+    ".cpp",
+    ".cc",
+    ".cxx",
+    ".c++",
+    ".cs",
+    ".php",
+    ".ts",
+    ".sh",
+    ".bash",
+    ".swift",
+    ".kt",
+    ".kts",
+    ".rb",
+    ".go",
+    ".rs",
+    ".m",
+    ".mm",
+    ".r",
+    ".scala",
+    ".pl",
+    ".pm",
+    ".lua",
+    ".groovy",
+    ".grvy",
+    ".gy",
+    ".gvy"
+]
+
 ############################
 ## Load local rule guide 
 ############################
@@ -55,8 +88,11 @@ os.makedirs(SAVED_REVIEWS_DIR, exist_ok=True)
 ############################
 def read_py_files(file_paths):
     file_contents = {}
+
     for file_path in file_paths:
-        if not file_path.endswith('.py'):
+        logging.debug(f"Reading extension{os.path.splittext(file_path)[1]}")
+        if os.path.splitext(file_path)[1] not in SUPPORTED_FILE_EXTENSIONS:
+            logging.debug(f"Skipping {file_path} because it is not a supported file extension")
             continue
 
         with open(file_path, 'r') as f:
@@ -177,7 +213,7 @@ def get_files_changed(target):
     result = []
     for file_path in file_paths_changed:
         file_extension = os.path.splitext(file_path)[1]
-        if file_path != "" and file_extension not in EXCLUDED_EXTENSIONS:
+        if file_path != "" and file_extension in SUPPORTED_FILE_EXTENSIONS:
             result.append("./" + file_path)
 
     return result
@@ -279,27 +315,51 @@ def run(scope, onlyReviewThisFile, model):
 
     # preliminary scan all files see how big this change is
     total_chars = 0
-    for file_path in file_paths_changed:
+    file_size_dict = {}
+    ESTIMATED_AVG_CHARS_PER_TOKEN = 4
+    for file_path in list(file_paths_changed):
         try:
             with open(file_path, 'r') as f:
                 content = f.read()
                 total_chars += len(content)
+                file_size_dict[file_path] = len(content) / ESTIMATED_AVG_CHARS_PER_TOKEN
         except Exception as e:
+            file_paths_changed.remove(file_path)
             logging.debug(f"Error while reading {file_path}: {e}")
             
     GPT4_PRICING_1K_TOKENS = 0.03
-    ESTIMATED_AVG_CHARS_PER_TOKEN = 4
     numTokens = total_chars/ESTIMATED_AVG_CHARS_PER_TOKEN
 
+    # TODO on 1ST INSTALL ask for preference -> save initial config file 
+    # config file stores all global configs like folders/files to ignore, persistent settings default loaded by scanline
+    # dynamic options mid run: Y = continue, 2 = ignore files beyond X size 3 bail out/don't run. 4. select files you want
     if numTokens > 30000: 
-        print("Heads up this change is roughly {0} tokens which is fairly large. On GPT4 as of October 2023 this may cost >${1} USD, you sure you want to do this and not either ignore big files or use a cheaper model via the --model flag?".format(numTokens, (numTokens/1000) * GPT4_PRICING_1K_TOKENS))
-        selection = input("Type 'y' to continue 'n' to bail out...")
-        while selection != "y" and selection != "n":
-            selection = input("Ehem... Type 'y' to continue 'n' to bail out...")
-        if selection == "n":
+        FILE_TOKENS_LIMIT = 10000
+        print("Heads up this change is roughly {0} tokens which is fairly large. On GPT4 as of October 2023 this may cost >${1} USD?".format(numTokens, (numTokens/1000) * GPT4_PRICING_1K_TOKENS))
+        selection = input("Choose one of the following options and press enter:\n\t(1) continue review\n\t(2) exit review\n\t(3) ignore files larger than 10k tokens")
+        while selection != "1" and selection != "2" and selection != "3":
+            selection = input("Ehem... please select a valid option 1, 2, 3...")
+        if selection == "2":
             print("Probably for the best 👍")
             return
+        if selection == "3":
+            print("Ignoring files larger than 10k tokens")
+            for file_path in list(file_paths_changed):
+                if file_size_dict.get(file_path, 0) > FILE_TOKENS_LIMIT:
+                    print(f"Ignoring {file_path} because it is {file_size_dict[file_path]} >= {FILE_TOKENS_LIMIT} tokens")
+                    file_paths_changed.remove(file_path)
+                    numTokens = numTokens - file_size_dict[file_path]
 
+    if numTokens > 30000: 
+        FILE_TOKENS_LIMIT = 10000
+        print("Heads up this change is still roughly {0} tokens which is fairly large. On GPT4 as of October 2023 this may cost >${1} USD?".format(numTokens, (numTokens/1000) * GPT4_PRICING_1K_TOKENS))
+        selection = input("Options enter one of the following and press enter:\n\t(1) continue review\n\t(2) exit review")
+        while selection != "1" and selection != "2":
+            selection = input("Ehem... please select a valid option 1, 2")
+        if selection == "2":
+            print("Probably for the best 👍")
+            return
+ 
     # Create a ThreadPoolExecutor with the maximum concurrency
     with ThreadPoolExecutor(max_workers=MAX_CONCURRENCY) as executor:
         # Submit the file review completion jobs to the executor
