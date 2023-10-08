@@ -12,6 +12,10 @@ bash -c "$(curl -sSL https://raw.githubusercontent.com/ScanLineDev/scanline/main
 
 Run `scanline` on the desired branch
 
+## Launch Video
+
+See https://twitter.com/ScanLineDev/status/1710362982642053260 
+
 ## Why use Scanline? 
 
 _“Scanline already saved us a few weeks on prod outages by catching race conditions”_ - CTO, ML infrastructure company 
