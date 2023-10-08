@@ -57,20 +57,20 @@ bash -c "$(curl -sSL https://raw.githubusercontent.com/ScanLineDev/scanline/main
 ## Usage
 ```bash
 # see all available commands
-scan --help 
+scanline --help 
 
 # examples
 # check all diffed changed on your current branch compared to main or master
-scan
+scanline
 
 # or only review uncommited changes on the current branch 
-scan --scope commit
+scanline --scope commit
 
 # or review all the code in the whole repo
-scan --scope repo
+scanline --scope repo
 
 # in addition you can specify a single file. For example here's how to see the changes to the file foo.py across only this last commit
-scan --scope repo --file ./path/to/foo.py
+scanline --scope repo --file ./path/to/foo.py
 
 ```
 
