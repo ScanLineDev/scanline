@@ -9,8 +9,8 @@ echo $SUDO_PASSWORD | sudo -S mv scanline /usr/local/bin/scanline
 echo -e "\n"
 echo "🗝 Last step - enter your OpenAI API key (this is only used locally, we never see this). To get your OpenAI API key, go here: https://platform.openai.com/account/api-keys "
 read OPENAI_API_KEY
-export OPENAI_API_KEY=$OPENAI_API_KEY
 echo "export OPENAI_API_KEY=$OPENAI_API_KEY" >> ~/.bashrc
+source ~/.bashrc
 echo "
 ✅ All done with setup. 
 
