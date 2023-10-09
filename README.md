@@ -1,3 +1,6 @@
+## Demo Video
+[scanline video demo](https://github.com/ScanLineDev/scanline/assets/2404105/43a46cc2-65f4-40ef-a7c0-b3d60cabdadb)
+
 ## Quick Start - Install
 
 **For Apple M1+ Silicon (ARM64):**
@@ -11,12 +14,6 @@ bash -c "$(curl -sSL https://raw.githubusercontent.com/ScanLineDev/scanline/main
 ```
 
 Run `scanline` on the desired branch. Set a local `.env` file with your `OPENAI_API_KEY`, or `export OPENAI_API_KEY=xxx`. You'll also be prompted while installing below.
-
-[scanline video demo](https://github.com/ScanLineDev/scanline/assets/2404105/43a46cc2-65f4-40ef-a7c0-b3d60cabdadb)
-
-## Launch Video
-
-See https://twitter.com/ScanLineDev/status/1710362982642053260 
 
 ## Why use Scanline? 
 
