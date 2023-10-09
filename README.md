@@ -3,13 +3,20 @@
 Catch bugs before they hurt. ScanLine reviews your code with GPT-4 and shows you how to improve it, like having an experienced code reviewer with you 24/7. 
 
 ScanLine is an **AI-based CLI tool** to quickly check your commit, branch, or entire repo for: 
-- [x] race conditions
-- [x] security gaps
-- [x] inconsistent logic
-- [x] reliability
-- [x] consistency
-- [x] optimization
-- [x] error handling
+- [x] 🏁 race conditions
+- [x] 🔒 security gaps
+- [x] 💡 inconsistent logic
+- [x] 🚀 performance
+- [x] ☑️ consistency
+- [x] ⚙️ optimization
+- [x] ⚠️ error handling
+
+<div align="center">
+<img width="359" alt="scanline-bash-2" src="https://github.com/ScanLineDev/scanline/assets/2404105/c12668f1-1734-4907-903e-f1ca4d81b261">
+</div>
+<div align="center">
+<img width="1255" alt="ScanLine_UI_Web_example" src="https://github.com/ScanLineDev/scanline/assets/2404105/d8984fe3-42f2-4efa-b2ea-a93e05961c36">
+</div>
 
 ## Why use Scanline? 
 
