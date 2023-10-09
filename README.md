@@ -12,6 +12,8 @@ bash -c "$(curl -sSL https://raw.githubusercontent.com/ScanLineDev/scanline/main
 
 Run `scanline` on the desired branch. Set a local `.env` file with your `OPENAI_API_KEY`, or `export OPENAI_API_KEY=xxx`. You'll also be prompted while installing below.
 
+https://github.com/ScanLineDev/scanline/assets/2404105/ad8957c2-dbfd-49ac-a6d0-4d5903dda583
+
 ## Launch Video
 
 See https://twitter.com/ScanLineDev/status/1710362982642053260 
