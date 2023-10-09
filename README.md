@@ -1,6 +1,6 @@
 # ScanLine (Alpha)
 
-Catch bugs before they hurt. ScanLine reviews your code with GPT-4 and shows you how to impove it, like having an experienced code reviewer with you 24/7. 
+Catch bugs before they hurt. ScanLine reviews your code with GPT-4 and shows you how to improve it, like having an experienced code reviewer with you 24/7. 
 
 ScanLine is an **AI-based CLI tool** to quickly check your commit, branch, or entire repo for: 
 - [x] race conditions
