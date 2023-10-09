@@ -15,7 +15,7 @@ ScanLine is an **AI-based CLI tool** to quickly check your commit, branch, or en
 
 _“Scanline already saved us a few weeks on prod outages by catching race conditions”_ - CTO, ML infrastructure company 
 
-_“I used to spend 5+ hours a day reviewing my team's code; now that's less than 1”_ - Eng Manager 
+_“I used to spend 5+ hours a day reviewing my team's code; now it's less than 1, while also uncovering more high-priority updates”_ - Eng Manager 
 
 _“My team started complementing the quality of my PRs”_ - SWE
 
