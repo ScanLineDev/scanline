@@ -10,7 +10,11 @@ bash -c "$(curl -sSL https://raw.githubusercontent.com/ScanLineDev/scanline/main
 bash -c "$(curl -sSL https://raw.githubusercontent.com/ScanLineDev/scanline/main/install_x86.sh)"
 ```
 
-Run `scanline` on the desired branch
+Run `scanline` on the desired branch. Set a local `.env` file with your `OPENAI_API_KEY`, or `export OPENAI_API_KEY=xxx`. You'll also be prompted while installing below.
+
+## Launch Video
+
+See https://twitter.com/ScanLineDev/status/1710362982642053260 
 
 ## Why use Scanline? 
 
@@ -40,39 +44,24 @@ Code is sent to OpenAI directly with your OpenAI key **(your code is only shared
 It'll provide feedback in areas like security, performance, race conditions, consistency, testability, modularity, complexity, error handling, and optimization
 
 This is the V0 release so it may be buggy & design can change suddenly. 
-## Install
-
-- First set a local `.env` file with your `OPENAI_API_KEY`, or `export OPENAI_API_KEY=xxx`. You'll also be prompted while installing below.
-
-- Install the latest release of the CLI tool
-
-**For Apple M1+ Silicon (ARM64):**
-```bash
-bash -c "$(curl -sSL https://raw.githubusercontent.com/ScanLineDev/scanline/main/install.sh)"
-```
-
-**For Apple Intel (x86):**
-```bash
-bash -c "$(curl -sSL https://raw.githubusercontent.com/ScanLineDev/scanline/main/install_x86.sh)"
-```
 
 ## Usage
 ```bash
 # see all available commands
-scan --help 
+scanline --help 
 
 # examples
 # check all diffed changed on your current branch compared to main or master
-scan
+scanline
 
 # or only review uncommited changes on the current branch 
-scan --scope commit
+scanline --scope commit
 
 # or review all the code in the whole repo
-scan --scope repo
+scanline --scope repo
 
 # in addition you can specify a single file. For example here's how to see the changes to the file foo.py across only this last commit
-scan --scope repo --file ./path/to/foo.py
+scanline --scope repo --file ./path/to/foo.py
 
 ```
 
