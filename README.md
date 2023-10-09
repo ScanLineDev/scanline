@@ -76,8 +76,10 @@ This is the V0 release, so it may be buggy & design may change quickly.
 `pip3 install -e .`
 
 Now you can run the CLI as `reviewme` above. It should auto-update if you change the python code. You may have to run `pip3 install -r requirements` first
+
 Experimental: You can add rule templates to /rule_templates directory. This text will be included in the prompt to the LLM, so the LLM can evaluate the code according to the style guide you write. 
-Experimental: Modify config.yaml to twewak things like temperature, supported filetypes, and how many results to show per category. 
+
+Experimental: Modify config.yaml to tweak things like temperature, supported filetypes, and how many results to show per category. 
 
 
 ## Currently supported languages:
