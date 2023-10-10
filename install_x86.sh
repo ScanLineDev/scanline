@@ -1,7 +1,7 @@
 #! /bin/bash
 echo "👋🏼 Welcome to Scanline, so glad you're here!"
 echo "⏳ Downloading requirements...."
-curl -L --progress-bar -o scanline https://github.com/ScanLineDev/scanline/releases/download/v0.2.0-x86/scanline
+curl -L --progress-bar -o scanline https://github.com/ScanLineDev/scanline/releases/download/v0.3.0-x86/scanline
 chmod +x scanline
 echo "🔐 We need your password to install the CLI in the right folder. (This is only used locally, we never see this.)"
 read -s SUDO_PASSWORD
