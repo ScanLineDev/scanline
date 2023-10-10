@@ -310,12 +310,40 @@ def get_current_branch():
     else:
         return None
 
-def run(scope, onlyReviewThisFile, model): 
+def select_candidate_files(file_paths, k=3):
+    # get all files starting at the git root of this project
+    file_paths = subprocess.check_output(['git', 'ls-files']).decode('utf-8').split('\n')
 
+    # filter for programming source code files
+    file_paths = [f for f in file_paths if f.endswith(('.js', '.py', '.java', '.cpp', '.h', '.c', '.html', '.css', '.xml', '.json', '.yml', '.yaml', '.sh', '.md', '.txt'))]
+
+    # filter for files with at least 500 and less than 5000 characters
+    file_char_counts = {f: os.stat(f).st_size for f in file_paths if os.stat(f).st_size >= 500 and os.stat(f).st_size < 5000}
+
+    # randomize order o the file_char_counts dictionary keys so its different on every call to select_candidate_files
+    import random
+    keys = list(file_char_counts.keys())
+    random.shuffle(keys)
+    file_char_counts = {k: file_char_counts[k] for k in keys}
+
+    # sample up to k files such that the sum of all the characters is less than 5000
+    total_chars = 0
+    candidate_files = []
+    for f, char_count in file_char_counts.items():
+        if total_chars + char_count < 5000:
+            candidate_files.append(f)
+            total_chars += char_count
+            if len(candidate_files) == k:
+                break
+
+    return candidate_files
+
+def run(scope, onlyReviewThisFile, model): 
     # Get all .py files in this directory and subdirectories
     excluded_dirs = ["bin", "lib", "include", "env", "node_modules"]
     file_paths = []
 
+    # TODO fix this bug.  if we call scanline from within dir it'll ignore files not in this dir even if we do scope == repo
     for root, dirs, files in os.walk("."):
         dirs[:] = [d for d in dirs if d not in excluded_dirs]
         for file in files:
@@ -324,7 +352,28 @@ def run(scope, onlyReviewThisFile, model):
 
     feedback_list = [] 
 
-    if scope == "commit":
+    if scope == "demo":
+        review_candidate_files = "n"
+        while review_candidate_files.lower() != "y":
+            candidate_files = select_candidate_files(file_paths, k=3)
+            if len(candidate_files) == 0:
+                print("Couldn't find any good source-code files to review. Please try running this on a git project that has some files with some code in them.")
+                return
+
+            print("\nHere are some candidate files we could review as part of this demo:")
+            for file in candidate_files:
+                print("\t" + file)
+            print("\n")
+            review_candidate_files = input("Do you want to review these files? (y) = review (n) = reselect other files: ")
+        
+        # not actually getting diffs for demo, just reading whole files and using diffs for naming consistency with scope options below
+        diffs = {}
+        file_contents = read_py_files(candidate_files)
+        for file_path, diff in file_contents.items():
+            diffs[file_path] = diff
+            file_paths_changed = candidate_files
+ 
+    elif scope == "commit":
         file_paths_changed = get_files_changed("HEAD~0")
         diffs = get_file_diffs(file_paths_changed, "HEAD~0")
     elif scope == "branch":
@@ -342,6 +391,7 @@ def run(scope, onlyReviewThisFile, model):
             pass
     elif scope == "repo":
         file_paths_changed = []
+        # not actually getting diffs, just reading whole file to review and using "diffs" for naming consistency with the other scope options above
         diffs = {}
         file_contents = read_py_files(file_paths)
         for file_path, diff in file_contents.items():

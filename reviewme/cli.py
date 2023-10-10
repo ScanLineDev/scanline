@@ -12,7 +12,7 @@ def cli():
     pass
 
 @cli.command()
-@click.option('--scope', default="branch", help='Scope of code review. Can be "commit", "branch", or "repo". Defaults to "branch"')
+@click.option('--scope', default="demo", help='Scope of code review. Can be "commit", "branch", "repo", or "demo". Defaults to "demo"')
 @click.option('--file', default="", help='Select a specific file to review. Defaults to all files in scope.')
 @click.option('--model', default="gpt-4", help='Specify openai model to use listed @ https://platform.openai.com/docs/models/overview. For example gpt-4-32k supports 4x larger files whereas gpt-3.5-turbo should be faster and >10x cheaper. Defaults to gpt-4.')
 def run(scope, file, model):
