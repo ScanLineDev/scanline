@@ -357,6 +357,18 @@ def run(scope, onlyReviewThisFile, model):
     feedback_list = [] 
 
     if scope == "demo":
+        # rendering demo splash screen
+        clear_terminal()
+        print("You ran Scanline without any parameters, so here's a quick demo!")
+        print("\nScanline will select some files in this git project to review")
+        print("Don't worry, no surprise bills. You'll be shown price & time estimates & asked to confirm before any review starts")
+        print("\nSound good?")
+
+        selection = input("Press any key to continue, or press q to quit: ")
+        if selection == "q":
+            print("Okay, exiting...")
+            return
+
         review_candidate_files = "n"
         while review_candidate_files.lower() != "y":
             clear_terminal()
