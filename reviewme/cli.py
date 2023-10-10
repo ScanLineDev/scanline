@@ -3,6 +3,7 @@ from reviewme.ailinter import ailinter
 import click
 import logging
 from click_default_group import DefaultGroup
+import os
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -19,6 +20,11 @@ def run(scope, file, model):
     branch = ailinter.get_current_branch()
     if branch == None:
         print ("👨🏻‍💻 You are not in a git repo. Please run this command in a git repo.")
+        return
+
+    # check if OPENAI_API_KEY is not set, if so, exit
+    if os.environ.get('OPENAI_API_KEY') == None:
+        print ("👨🏻‍💻 An OPENAI_API_KEY was not found. Please set it in your .bashrc or in this terminal session via \'export OPENAI_API_KEY=*****\' and try scanline again.")
         return
 
     if scope == "branch" and (branch == "main" or branch == "master"):
