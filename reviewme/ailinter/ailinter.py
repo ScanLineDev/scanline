@@ -319,7 +319,7 @@ def select_candidate_files(file_paths, k=3):
     file_paths = subprocess.check_output(['git', 'ls-files']).decode('utf-8').split('\n')
 
     # filter for programming source code files
-    file_paths = [f for f in file_paths if f.endswith(('.js', '.py', '.java', '.cpp', '.h', '.c', '.html', '.css', '.xml', '.json', '.yml', '.yaml', '.sh', '.md', '.txt'))]
+    file_paths = [f for f in file_paths if f.endswith(('.js', '.py', '.java', '.cpp', '.h', '.c', '.html', '.css', '.xml', '.json', '.yml', '.yaml', '.sh', '.md', '.txt', '.go', '.ts'))]
 
     # filter for files with at least 500 and less than 5000 characters
     file_char_counts = {f: os.stat(f).st_size for f in file_paths if os.stat(f).st_size >= 500 and os.stat(f).st_size < 5000}
