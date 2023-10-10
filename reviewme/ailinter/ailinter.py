@@ -277,6 +277,21 @@ def read_file(file_path):
     with open(file_path, 'r') as f:
         return f.read()
 
+def get_current_branch():
+    # use git cli to figure out which branch we're on    
+    result = subprocess.run(
+        "git branch --show-current",
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )
+    
+    if result.stdout:
+        return result.stdout.strip()
+    else:
+        return None
+
 def run(scope, onlyReviewThisFile, model): 
 
     # Get all .py files in this directory and subdirectories
