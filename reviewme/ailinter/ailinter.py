@@ -375,30 +375,30 @@ def run(scope, onlyReviewThisFile, model):
     if numTokens > 30000: 
         FILE_TOKENS_LIMIT = 10000
         print("Heads up this change is roughly {0} tokens which is fairly large. On GPT4 as of October 2023 this may cost >${1} USD?".format(numTokens, (numTokens/1000) * GPT4_PRICING_1K_TOKENS))
-        selection = input("Choose one of the following options and press enter:\n\t(1) continue review\n\t(2) exit review\n\t(3) ignore files larger than 10k tokens")
+        selection = input("Choose one of the following options and press enter:\n\t(1) ignore files larger than 10k tokens \n\t(2) exit review\n\t(3) continue review without changes")
         while selection != "1" and selection != "2" and selection != "3":
             selection = input("Ehem... please select a valid option 1, 2, 3...")
-        if selection == "2":
-            print("Probably for the best 👍")
-            return
-        if selection == "3":
+        if selection == "1":
             print("Ignoring files larger than 10k tokens")
             for file_path in list(file_paths_changed):
                 if file_size_dict.get(file_path, 0) > FILE_TOKENS_LIMIT:
                     print(f"Ignoring {file_path} because it is {file_size_dict[file_path]} >= {FILE_TOKENS_LIMIT} tokens")
                     file_paths_changed.remove(file_path)
                     numTokens = numTokens - file_size_dict[file_path]
-
-        if numTokens > 30000: 
-            FILE_TOKENS_LIMIT = 10000
-            print("Heads up this change is still roughly {0} tokens which is fairly large. On GPT4 as of October 2023 this may cost >${1} USD?".format(numTokens, (numTokens/1000) * GPT4_PRICING_1K_TOKENS))
-            selection = input("Options enter one of the following and press enter:\n\t(1) continue review\n\t(2) exit review")
-            while selection != "1" and selection != "2":
-                selection = input("Ehem... please select a valid option 1, 2")
-            if selection == "2":
-                print("Probably for the best 👍")
-                return
+            if numTokens > 30000: 
+                FILE_TOKENS_LIMIT = 10000
+                print("Heads up this change is still roughly {0} tokens which is fairly large. On GPT4 as of October 2023 this may cost >${1} USD?".format(numTokens, (numTokens/1000) * GPT4_PRICING_1K_TOKENS))
+                selection = input("Options enter one of the following and press enter:\n\t(1) continue review\n\t(2) exit review")
+                while selection != "1" and selection != "2":
+                    selection = input("Ehem... please select a valid option 1, 2")
+                if selection == "2":
+                    print("Probably for the best 👍")
+                    return
     
+        if selection == "2":
+            print("Probably for the best 👍")
+            return
+ 
     # Create a ThreadPoolExecutor with the maximum concurrency
     with ThreadPoolExecutor(max_workers=MAX_CONCURRENCY) as executor:
         # Submit the file review completion jobs to the executor
