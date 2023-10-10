@@ -104,6 +104,10 @@ def read_py_files(file_paths):
 
     return file_contents
 
+import os
+def clear_terminal():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
 # Check for local imports in the code and append the imported code
 def check_and_append_local_imports(code, file_paths):
     lines = code.split('\n')
@@ -355,6 +359,7 @@ def run(scope, onlyReviewThisFile, model):
     if scope == "demo":
         review_candidate_files = "n"
         while review_candidate_files.lower() != "y":
+            clear_terminal()
             candidate_files = select_candidate_files(file_paths, k=3)
             if len(candidate_files) == 0:
                 print("Couldn't find any good source-code files to review. Please try running this on a git project that has some files with some code in them.")
@@ -364,7 +369,7 @@ def run(scope, onlyReviewThisFile, model):
             for file in candidate_files:
                 print("\t" + file)
             print("\n")
-            review_candidate_files = input("Do you want to review these files? (y) = review (n) = reselect other files: ")
+            review_candidate_files = input("Do you want to review these files?\n\t(y) = review these files (n) = reselect other files ")
         
         # not actually getting diffs for demo, just reading whole files and using diffs for naming consistency with scope options below
         diffs = {}
