@@ -374,7 +374,7 @@ def run(scope, onlyReviewThisFile, model):
             clear_terminal()
             candidate_files = select_candidate_files(file_paths, k=3)
             if len(candidate_files) == 0:
-                print("Couldn't find any good source-code files to review. Please try running this on a git project that has some files with some code in them.")
+                print("Couldn't find any good source-code files to review. Please try running this from the root directory of a git project that has some source code files.")
                 return
 
             print("\nHere are some candidate files we could review as part of this demo:")
