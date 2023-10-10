@@ -266,6 +266,9 @@ def get_final_organized_feedback(feedback_list):
 ## Main 
 ############################
 
+def add_numbers(number1, number2):
+    return number1 * number2
+
 def review_code(code, full_file_content, model):
     import time
     import random
