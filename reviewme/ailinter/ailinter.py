@@ -210,16 +210,34 @@ def get_main_branch_name():
     else:
         return "master"
 
-def get_files_changed(target):
-    EXCLUDED_EXTENSIONS = ['.snap', ".pyc"]
-    # Get list of all files that changed on this git branch compared to main
+def get_git_root():
+    try:
+        root = subprocess.run(
+            "git rev-parse --show-toplevel",
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        ).stdout.strip()
+    except Exception as e:
+        logging.error(f"Error while getting git root: {e}. Setting root to None")
+        root = None
+
+    return root
+
+def get_files_changed(target): 
+    # Get list of absolute paths to all files that changed on this git branch compared to main
+    # Assumes target is a valid git identifier like HEAD~0 or main
     file_paths_changed = os.popen("git diff --name-only {0}".format(target)).read().split("\n")
+
+    git_root = get_git_root()
+
     # add . prefix to all files
     result = []
     for file_path in file_paths_changed:
         file_extension = os.path.splitext(file_path)[1]
         if file_path != "" and file_extension in SUPPORTED_FILE_EXTENSIONS:
-            result.append("./" + file_path)
+            result.append(git_root + "/" + file_path)
 
     return result
 
@@ -539,3 +557,6 @@ def run(scope, onlyReviewThisFile, model):
     import webbrowser
     webbrowser.open_new_tab(f"file://{index_html_file}")
 
+if __name__ == "__main__":
+    get_files_changed("HEAD~0")
+    get_current_branch()
