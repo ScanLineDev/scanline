@@ -389,16 +389,16 @@ def run(scope, onlyReviewThisFile, model):
                     file_paths_changed.remove(file_path)
                     numTokens = numTokens - file_size_dict[file_path]
 
-    if numTokens > 30000: 
-        FILE_TOKENS_LIMIT = 10000
-        print("Heads up this change is still roughly {0} tokens which is fairly large. On GPT4 as of October 2023 this may cost >${1} USD?".format(numTokens, (numTokens/1000) * GPT4_PRICING_1K_TOKENS))
-        selection = input("Options enter one of the following and press enter:\n\t(1) continue review\n\t(2) exit review")
-        while selection != "1" and selection != "2":
-            selection = input("Ehem... please select a valid option 1, 2")
-        if selection == "2":
-            print("Probably for the best 👍")
-            return
- 
+        if numTokens > 30000: 
+            FILE_TOKENS_LIMIT = 10000
+            print("Heads up this change is still roughly {0} tokens which is fairly large. On GPT4 as of October 2023 this may cost >${1} USD?".format(numTokens, (numTokens/1000) * GPT4_PRICING_1K_TOKENS))
+            selection = input("Options enter one of the following and press enter:\n\t(1) continue review\n\t(2) exit review")
+            while selection != "1" and selection != "2":
+                selection = input("Ehem... please select a valid option 1, 2")
+            if selection == "2":
+                print("Probably for the best 👍")
+                return
+    
     # Create a ThreadPoolExecutor with the maximum concurrency
     with ThreadPoolExecutor(max_workers=MAX_CONCURRENCY) as executor:
         # Submit the file review completion jobs to the executor
