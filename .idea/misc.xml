@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Black">
+    <option name="enabledOnReformat" value="true" />
+    <option name="enabledOnSave" value="true" />
+    <option name="pathToExecutable" value="$PROJECT_DIR$/venv/bin/black" />
+    <option name="sdkName" value="Python 3.11 (scanline-parea)" />
+  </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.11 (scanline-parea)" project-jdk-type="Python SDK" />
+</project>
