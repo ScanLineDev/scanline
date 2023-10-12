@@ -11,14 +11,14 @@ from attrs import asdict
 from dotenv import load_dotenv
 from parea.utils.trace_utils import trace
 
-from reviewme.ailinter.format_results import (
+from ailinter.format_results import (
     organize_feedback_items,
     format_feedback_for_print,
     PRIORITY_MAP,
     DESCRIPTIONS_OF_ERROR_CATEGORIES,
     LIST_OF_ERROR_CATEGORIES,
 )
-from reviewme.ailinter.helpers import (
+from ailinter.helpers import (
     create_openai_chat_completion,
     load_config,
     MODEL_OPTIONS,

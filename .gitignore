@@ -12,8 +12,9 @@ pyvenv.cfg
 *.pyc
 __pycache__
 reviewme.egg-info/
-reviewme/ailinter/saved_reviews/
-reviewme/ailinter/streamlit/streamlit_app_super.py
-reviewme/ailinter/streamlit/table.html
+ailinter/saved_reviews/
+ailinter/streamlit/streamlit_app_super.py
+ailinter/streamlit/table.html
 scanline/ailinter/.DS_Store
 .DS_Store
+.idea

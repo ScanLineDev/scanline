@@ -1,7 +1,7 @@
 import re
 from collections import defaultdict
 
-from reviewme.ailinter.helpers import load_config
+from ailinter.helpers import load_config
 
 config = load_config()
 MAX_RESULTS_PER_CATEGORY_TYPE = config["MAX_RESULTS_PER_CATEGORY_TYPE"]
